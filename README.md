@@ -46,4 +46,4 @@ Swagger UI: http://localhost:8080/swagger-ui.html
 
 ## KI und Hilfsmittel
 
-TODO: Eigenständigkeitserklärung, Hilfsmittelverzeichnis und Prompt-Verzeichnis gemäss HFTM-KI-Richtlinie 1.1.
+Eigenständigkeitserklärung, Hilfsmittelverzeichnis und Prompt-Verzeichnis: [docs/ki/KI-Deklaration.md](docs/ki/KI-Deklaration.md)
