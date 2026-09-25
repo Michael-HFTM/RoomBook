@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: RoomBook
+  jpa:
+    open-in-view: false        # Lazy Loading nur innerhalb von Transaktionen (T11)
+    hibernate:
+      ddl-auto: validate       # Schema kommt ausschliesslich aus Flyway (T2)

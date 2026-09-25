@@ -1,0 +1,9 @@
+services:
+  postgres:
+    image: 'postgres:18'
+    environment:
+      - 'POSTGRES_DB=roombook'
+      - 'POSTGRES_USER=roombook'
+      - 'POSTGRES_PASSWORD=roombook' # nur lokale Entwicklung
+    ports:
+      - '5432:5432'
