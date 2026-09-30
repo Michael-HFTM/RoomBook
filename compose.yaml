@@ -4,6 +4,6 @@ services:
     environment:
       - 'POSTGRES_DB=roombook'
       - 'POSTGRES_USER=roombook'
-      - 'POSTGRES_PASSWORD=roombook' # nur lokale Entwicklung
+      - 'POSTGRES_PASSWORD=roombook' # local development only
     ports:
       - '5432:5432'
