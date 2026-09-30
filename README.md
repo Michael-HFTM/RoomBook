@@ -1,6 +1,6 @@
 # RoomBook – Raumreservationssystem
 
-HFTM Database Development Projektarbeit · Michael Gasser
+HFTM Database Development Projektarbeit · Michael Gasser · Abgegebener Stand: Git-Tag `v1.0.0`
 
 Spring Boot und PostgreSQL.<br>
 Die REST-API bucht Arbeits- und Meetingräume über mehrere Standorte hinweg, schliesst Doppelbuchungen aus und wertet die Belegung aus.<br>
