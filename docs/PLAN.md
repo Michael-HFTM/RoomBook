@@ -38,9 +38,9 @@ und `docs/management/Projectsketch_RoomBook.pdf` (Steckbrief, A1–A7). Erledigt
 - [x] T11: Abfragezählung mit datasource-proxy für 1/10/100 Treffer, N+1 belegen bzw. ausschliessen, Vorher/Nachher
 
 ### 5. Auswertungen (A7, T6)
-- [ ] View `v_active_booking` (nicht storniert, mit Raum und Gruppierung)
-- [ ] A7 Belegungsrate über JDBC (`JdbcClient`, parametrisiert): Buchungen auf Mo–Fr 07:00–18:00 (Europe/Zurich) kappen, JOIN und Aggregation
-- [ ] Test mit bekannten Ergebnissen, inkl. mehrerer Buchungen pro Raum und Buchungen über die Geschäftszeit hinaus
+- [x] View `v_active_booking` (nicht storniert, mit Raum und Gruppierung)
+- [x] A7 Belegungsrate über JDBC (`JdbcClient`, parametrisiert): Buchungen auf Mo–Fr 07:00–18:00 (Europe/Zurich) kappen, JOIN und Aggregation
+- [x] Test mit bekannten Ergebnissen, inkl. mehrerer Buchungen pro Raum und Buchungen über die Geschäftszeit hinaus
 
 ### 6. Testdaten und Performance (T9, T10)
 - [ ] Generator `scripts/generate-data.sql` (deterministisch mit `setseed`): ≥ 100'000 Buchungen, überschneidungsfrei
@@ -50,7 +50,8 @@ und `docs/management/Projectsketch_RoomBook.pdf` (Steckbrief, A1–A7). Erledigt
 - [ ] Messungen unter `docs/performance/`
 
 ### 7. Cache (T12)
-- [ ] Kandidat: Teilbaum der Standorthierarchie (ändert selten, wird von A3/A6/A7 oft gebraucht)
+- [ ] Kandidat: Teilbaum der Standorthierarchie (ändert selten; `LocationService#findSubtreeIds`, genutzt von A6;
+  A3 und A7 lösen den Teilbaum in ihrer eigenen SQL-Abfrage auf)
 - [ ] `@EnableCaching`, Schlüssel = Location-ID, Eviction bei jeder Änderung in A1
 - [ ] Test: erster Zugriff (Query), Treffer (keine Query), nach Änderung (neue Query, aktuelles Ergebnis)
 
@@ -96,3 +97,10 @@ Hier Entscheide mit Datum und kurzer Begründung festhalten.
   (Historie). Drei rekursive Abfragen: Teilbaum-IDs (A6, später A7 und Cache T12), Vorfahren aktiv (A4) und für A3
   eine CTE ab den Wurzeln nur über aktive Knoten. A6 als statische JPQL-Abfrage mit `:param IS NULL OR …` und fester
   Sortierung `start_time, id`; Seitengrösse max. 100. `datasource-proxy` nur noch im Test-Scope.
+- 2026-09-30: Phase 5 (A7): Zeitraum als `LocalDate` (Ortszeit Zürich, `to` inklusive). Geschäftszeitfenster pro
+  Werktag via `generate_series` in Ortszeit gebildet und nach `timestamptz` umgerechnet (Zeitumstellung korrekt);
+  Kappung über den Schnitt `*` von `tstzrange`. Gebuchte Stunden werden pro Raum aggregiert, bevor sie an die Räume
+  gejoint werden, damit sich der Nenner nicht vervielfacht. Es zählen alle Räume im Teilbaum, auch deaktivierte, weil
+  das Schema keinen Deaktivierungszeitpunkt kennt. Feiertage werden ignoriert. Ranking über die Sortierung nach
+  Belegungsrate; Auswertungen nach Wochentag/Tageszeit und Stornoquote aus dem Steckbrief bewusst nicht umgesetzt.
+  Gesamtrate eines Standorts = Summe gebuchte / Summe verfügbare Stunden seiner Räume.
