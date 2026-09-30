@@ -61,7 +61,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <scope>runtime</scope>
+            <!-- compile scope: ApiExceptionHandler reads the violated constraint from PSQLException -->
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
