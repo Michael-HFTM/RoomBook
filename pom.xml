@@ -130,6 +130,12 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!-- spring-boot:run loads dev seed data, tests do not -->
+                    <profiles>
+                        <profile>dev</profile>
+                    </profiles>
+                </configuration>
             </plugin>
         </plugins>
     </build>

@@ -88,3 +88,6 @@ Hier Entscheide mit Datum und kurzer Begründung festhalten.
   Anfragen abdeckt. Änderungen verlangen die gelesene `version` im Request, damit verlorene Updates auch über
   getrennte HTTP-Anfragen erkannt werden; `@Version` sichert den gleichzeitigen Fall ab. Buchbar ist ein Raum, wenn
   er selbst aktiv ist; deaktivierte übergeordnete Standorte werden mit der rekursiven CTE (Phase 4) berücksichtigt.
+- 2026-09-30: Dev-Seed: Profil `dev` (aktiv bei `spring-boot:run`) ergänzt Flyway um `db/dev` mit einer idempotenten
+  Repeatable-Migration (Benutzer, kleine Standorthierarchie, Räume). Nicht in `db/migration`, weil Seed-Daten nicht
+  zum Schema gehören und mit den Testdaten kollidieren würden.

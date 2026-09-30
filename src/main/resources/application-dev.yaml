@@ -1,0 +1,4 @@
+# Local development only: adds seed data (db/dev) on top of the schema migrations
+spring:
+  flyway:
+    locations: classpath:db/migration, classpath:db/dev
