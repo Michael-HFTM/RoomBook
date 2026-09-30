@@ -114,6 +114,25 @@ Swagger UI: http://localhost:8080/swagger-ui.html
 ./mvnw verify              # Integrationstests gegen PostgreSQL (Testcontainers)
 ```
 
+## Testdaten (T9)
+
+```bash
+docker compose exec -T postgres psql -U roombook -d roombook -v ON_ERROR_STOP=1 < scripts/generate-data.sql
+```
+
+[`scripts/generate-data.sql`](scripts/generate-data.sql) **ersetzt alle Daten** (auch den Dev-Seed) in der
+migrierten DB, Laufzeit ca. 10 s. Deterministisch über `setseed`, zweimal ausgeführt mit identischer Prüfsumme
+über alle Buchungen. Keine Personendaten (Benutzer `user1`…`user500`, Titel `Meeting`).
+
+| Tabelle  | Anzahl  | Verteilung |
+|----------|--------:|------------|
+| app_user | 500     | `user1`–`user5` ADMIN; Buchungen pro Benutzer schief: min 148, Median 244, max 7'810 |
+| location | 52      | 4 Standorte × 2 Gebäude × 5 Etagen |
+| room     | 200     | 5 pro Etage, Kapazität 2–20; Belegung pro Raum schief: min 247, Median 714, max 2'049 Buchungen |
+| booking  | 171'783 | 2025–2026, Mo–Fr 07–18 Uhr (Europe/Zurich), 30/45/60 min ab voller Stunde, davon 17'148 (10 %) storniert |
+
+Überschneidungsfrei durch die Konstruktion: Jede Buchung liegt in einem eigenen Stunden-Slot ihres Raums.
+
 ## Nachweise
 
 | Anforderung | Umsetzung | Nachweis |
@@ -129,6 +148,7 @@ Swagger UI: http://localhost:8080/swagger-ui.html
 | T5          | Exclusion-Constraint (gleichzeitige Buchung), Optimistic Locking (gleichzeitige Änderung) → 409 | `BookingConcurrencyTest` (zwei Threads) |
 | T6          | JPQL-DTO-Projektion für A6 (`BookingListItem`); parametrisierte JDBC-Auswertung mit JOIN und Aggregation über View `v_active_booking` für A7 | `booking/BookingSearchTest`, `report/ReportApiTest` |
 | T7          | Filter, Sortierung `start_time, id` und `fetch first` in SQL, Seitengrösse max. 100 | `booking/BookingSearchTest`, `BookingQueryCountTest` (SQL enthält `fetch first`) |
+| T9          | Generator `scripts/generate-data.sql` (siehe Testdaten) | Aufruf und Datensatzanzahlen oben |
 | T11         | Lazy-Beziehungen, A6 als DTO-Projektion statt Entities (siehe unten) | `booking/BookingQueryCountTest` |
 | übrige T    | TODO      | TODO     |
 
