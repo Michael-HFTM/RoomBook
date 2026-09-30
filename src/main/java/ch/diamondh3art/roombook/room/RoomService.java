@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Service
@@ -26,6 +27,17 @@ public class RoomService {
 
     public List<RoomResponse> findAll() {
         return roomRepository.findAll(Sort.by("id")).stream().map(RoomResponse::from).toList();
+    }
+
+    // A3
+    public List<RoomResponse> findFree(OffsetDateTime from, OffsetDateTime to, int minCapacity, Long locationId) {
+        if (!from.isBefore(to)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "'from' must be before 'to'");
+        }
+        if (locationId != null) {
+            locationService.getLocation(locationId);
+        }
+        return roomRepository.findFree(locationId, minCapacity, from, to).stream().map(RoomResponse::from).toList();
     }
 
     public RoomResponse findById(long id) {

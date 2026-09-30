@@ -120,13 +120,30 @@ Swagger UI: http://localhost:8080/swagger-ui.html
 |-------------|-----------|----------|
 | A1          | `LocationController`/`LocationService`, Zyklen-Trigger `location_no_cycle` | `location/LocationApiTest`, `SchemaConstraintsTest` |
 | A2          | `RoomController`/`RoomService`, `uq_room_location_id_name`, `ck_room_capacity` | `room/RoomApiTest`, `SchemaConstraintsTest` |
-| A3          | TODO      | TODO     |
+| A3          | `RoomRepository#findFree` (native SQL, rekursive CTE über aktive Standorte, `NOT EXISTS` mit `&&`) | `room/RoomSearchTest` |
 | A4          | `BookingController`/`BookingService#create`, `ex_booking_room_id` | `booking/BookingApiTest` |
 | A5          | `BookingService#update`/`#cancel`, `@Version` | `booking/BookingApiTest` |
-| A6–A7       | TODO      | TODO     |
+| A6          | `BookingRepository#search` (JPQL-DTO-Projektion), `LocationRepository#findSubtreeIds` | `booking/BookingSearchTest` |
+| A7          | TODO      | TODO     |
 | T4          | Serie und Termine in einer `@Transactional`-Methode, Flush pro Termin | `BookingConcurrencyTest#seriesIsRolledBackCompletelyWhenOneOccurrenceOverlaps` |
 | T5          | Exclusion-Constraint (gleichzeitige Buchung), Optimistic Locking (gleichzeitige Änderung) → 409 | `BookingConcurrencyTest` (zwei Threads) |
+| T6          | JPQL-DTO-Projektion für A6 (`BookingListItem`); JDBC-Auswertung und View folgen mit A7 | `booking/BookingSearchTest` |
+| T7          | Filter, Sortierung `start_time, id` und `fetch first` in SQL, Seitengrösse max. 100 | `booking/BookingSearchTest`, `BookingQueryCountTest` (SQL enthält `fetch first`) |
+| T11         | Lazy-Beziehungen, A6 als DTO-Projektion statt Entities (siehe unten) | `booking/BookingQueryCountTest` |
 | übrige T    | TODO      | TODO     |
+
+**T11 – Abfragen für die Buchungsliste** (jede Buchung mit eigenem Raum und Benutzer, Seitengrösse 100):
+
+| Treffer | Entities laden (vorher) | DTO-Projektion (nachher) |
+|--------:|------------------------:|-------------------------:|
+| 1       | 3                       | 1                        |
+| 10      | 21                      | 1                        |
+| 100     | 202                     | 2                        |
+
+Beim Laden der Entities löst jeder Zugriff auf Raumname und Benutzername eine eigene Abfrage aus (N+1: 1 + 2n).
+Die Liste braucht nur diese zwei Felder, deshalb liest die DTO-Projektion sie per JOIN in einer Abfrage. Die
+zweite Abfrage bei 100 Treffern ist der Count für die Pagination; Spring Data lässt ihn weg, wenn die erste Seite
+nicht voll ist.
 
 ## KI und Hilfsmittel
 
