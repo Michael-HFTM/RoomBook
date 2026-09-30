@@ -1,5 +1,6 @@
 package ch.diamondh3art.roombook.report;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,7 +21,9 @@ public class ReportController {
 
     // A7: e.g. /api/reports/occupancy?from=2026-10-05&to=2026-10-09&locationId=1
     @GetMapping("/occupancy")
-    public OccupancyReport occupancy(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+    public OccupancyReport occupancy(@Parameter(example = "2026-10-05", description = "First day, Zurich local date")
+                                     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+                                     @Parameter(example = "2026-10-09", description = "Last day (inclusive)")
                                      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
                                      @RequestParam(required = false) Long locationId) {
         return reportService.occupancy(from, to, locationId);
