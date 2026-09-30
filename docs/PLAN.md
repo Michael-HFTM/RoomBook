@@ -57,8 +57,8 @@ und `docs/management/Projectsketch_RoomBook.pdf` (Steckbrief, A1–A7). Erledigt
   Deaktivieren und Rollback behalten den Cache (`LocationSubtreeCacheTest`)
 
 ### 8. Abgabe
-- [ ] API-Beispielaufrufe als `http/*.http`
-- [ ] README: Nachweistabelle A1–A7 und T1–T12 vollständig, Entscheide, Einschränkungen
+- [x] API-Beispielaufrufe als `http/*.http` (Umgebungen `dev` und `testdata` für die Benutzer-IDs)
+- [x] README: Nachweistabelle A1–A7 und T1–T12 vollständig, Entscheide, Einschränkungen
 - [ ] `docs/ki/KI-Deklaration.md` vervollständigen (laufend pro Arbeitspaket nachgeführt), Ort/Datum ergänzen, im README verlinken
 - [ ] Git-Tag für den Abgabestand, im README vermerken; Dozent (simon.erhardt@hftm.ch) einladen
 
