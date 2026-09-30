@@ -1,6 +1,7 @@
 package ch.diamondh3art.roombook.room;
 
 import ch.diamondh3art.roombook.common.user.UserService;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -27,7 +28,9 @@ public class RoomController {
 
     // A3: e.g. /api/rooms/free?from=2026-10-05T09:00:00Z&to=2026-10-05T10:00:00Z&minCapacity=4&locationId=1
     @GetMapping("/free")
-    public List<RoomResponse> findFree(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
+    public List<RoomResponse> findFree(@Parameter(example = "2026-10-05T09:00:00+02:00", description = "ISO-8601 with offset, e.g. +02:00 (summer) or +01:00 (winter) for Zurich local time")
+                                       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
+                                       @Parameter(example = "2026-10-05T10:00:00+02:00", description = "ISO-8601 with offset, e.g. +02:00 (summer) or +01:00 (winter) for Zurich local time")
                                        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to,
                                        @RequestParam(defaultValue = "1") @Positive int minCapacity,
                                        @RequestParam(required = false) Long locationId) {

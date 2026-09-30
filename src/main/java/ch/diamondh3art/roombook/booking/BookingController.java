@@ -4,6 +4,7 @@ import ch.diamondh3art.roombook.common.user.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,7 @@ public class BookingController {
 
     // A6: e.g. /api/bookings?userId=2&from=2026-10-01T00:00:00Z&status=ACTIVE&page=0&size=20
     @GetMapping
-    public PagedModel<BookingListItem> search(BookingFilter filter,
+    public PagedModel<BookingListItem> search(@ParameterObject BookingFilter filter,
                                               @RequestParam(defaultValue = "0") @Min(0) int page,
                                               @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
         return bookingService.search(filter, page, size);
