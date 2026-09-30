@@ -50,10 +50,11 @@ und `docs/management/Projectsketch_RoomBook.pdf` (Steckbrief, A1–A7). Erledigt
 - [x] Messungen unter `docs/performance/`
 
 ### 7. Cache (T12)
-- [ ] Kandidat: Teilbaum der Standorthierarchie (ändert selten; `LocationService#findSubtreeIds`, genutzt von A6;
+- [x] Kandidat: Teilbaum der Standorthierarchie (ändert selten; `LocationService#findSubtreeIds`, genutzt von A6;
   A3 und A7 lösen den Teilbaum in ihrer eigenen SQL-Abfrage auf)
-- [ ] `@EnableCaching`, Schlüssel = Location-ID, Eviction bei jeder Änderung in A1
-- [ ] Test: erster Zugriff (Query), Treffer (keine Query), nach Änderung (neue Query, aktuelles Ergebnis)
+- [x] `@EnableCaching`, Schlüssel = Location-ID; bei Anlegen/Umhängen (A1) ganzen Cache leeren, erst nach Commit
+- [x] Test: erster Zugriff (Query), Treffer (keine Query), nach Änderung (neue Query, aktuelles Ergebnis),
+  Deaktivieren und Rollback behalten den Cache (`LocationSubtreeCacheTest`)
 
 ### 8. Abgabe
 - [ ] API-Beispielaufrufe als `http/*.http`
@@ -113,3 +114,13 @@ Hier Entscheide mit Datum und kurzer Begründung festhalten.
   PostgreSQL beim Vielbucher auf den generischen Plan (`? IS NULL OR …` nicht auflösbar). V4 `(app_user_id,
   start_time)`: Liste 12.3 → 1.3 ms, auto bleibt danach bei custom. Deshalb kein `plan_cache_mode` und keine
   dynamische Abfrage. Kosten: 5 MB, Masseneinfügen ca. 6 % langsamer.
+- 2026-09-30: Phase 7 (T12): Gecacht wird der Teilbaum (Liste der IDs) pro Standort-ID im In-Memory-Cache von Spring
+  (`simple`, keine TTL, eine Instanz). Aktualitätsregel: nach jeder committeten Änderung der Hierarchie sofort aktuell,
+  weil ein veralteter Teilbaum falsche A6-Filterergebnisse liefert. Anlegen und Umhängen ändern die Teilbäume aller
+  Vorfahren, deshalb wird der ganze Cache geleert statt eines Schlüssels. Deaktivieren ändert die IDs nicht (A6 zeigt
+  auch deaktivierte Teilbäume) und behält den Cache. Geleert wird erst nach dem Commit, sonst könnte eine parallele
+  Anfrage den alten Stand zwischen Eviction und Commit wieder cachen. Restfenster: Eine Leseabfrage, die vor dem
+  Commit startet und erst nach der Eviction speichert, kann den alten Stand cachen (Millisekunden, bis zur nächsten
+  Änderung); bewusst akzeptiert. Änderungen direkt in der DB (z. B. per `psql`) sieht der Cache erst nach Neustart.
+  A7-Bericht verworfen: teurer, aber jede Buchung würde alle Schlüssel invalidieren oder eine TTL mit veralteten
+  Raten verlangen. Der Geschwindigkeitsgewinn ist klein (kleine Tabelle), T12 bewertet die Aktualitätsstrategie.
