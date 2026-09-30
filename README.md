@@ -108,11 +108,29 @@ Auf einer leeren DB gilt: `X-User-Id: 1` = admin (ADMIN), `2` = alice, `3` = bob
 
 Swagger UI: http://localhost:8080/swagger-ui.html
 
+API-Beispielaufrufe für A1–A7 inkl. Fehlerfällen: [`http/`](http) (IntelliJ HTTP Client, eine Datei pro Fachbereich).
+Die Umgebung wählt die Benutzer-IDs: `dev` für den Dev-Seed auf leerer DB, `testdata` nach dem Testdatengenerator
+(`1` = ADMIN, `6`/`7` = USER). Jede Datei legt ihre eigenen Standorte und Räume an und ist deshalb wiederholbar.
+
 ## Tests
 
 ```bash
 ./mvnw verify              # Integrationstests gegen PostgreSQL (Testcontainers)
 ```
+
+Voraussetzung: JDK 25 und ein laufendes Docker (Docker Desktop). Testcontainers startet `postgres:18`, Flyway baut das
+Schema ab leerer DB auf; `compose.yaml`, Dev-Seed und T9-Testdaten werden nicht gebraucht. Jede Testklasse legt kleine,
+kontrollierte Daten an und entfernt sie wieder: per Rollback der Test-Transaktion bzw. explizit bei Tests, die echt
+committen müssen (`BookingConcurrencyTest`, `LocationSubtreeCacheTest`).
+
+| Bereich | Testklassen |
+|---------|-------------|
+| DB-Regeln (gültige/ungültige Zustände) | `SchemaConstraintsTest` |
+| Migrationen (Neuaufbau bei jedem Testlauf, V1 → V2 mit Bestandsdaten) | `RoomBookApplicationTests`, `SchemaMigrationTest` |
+| API, Validierung, Berechtigungen (400/401/403/404/409) | `LocationApiTest`, `RoomApiTest`, `BookingApiTest` |
+| Rollback und konkurrierende Änderungen | `BookingConcurrencyTest` |
+| Abfrageergebnisse, Filter, Pagination, Auswertung | `RoomSearchTest`, `BookingSearchTest`, `ReportApiTest` |
+| Ladeverhalten und Cache | `BookingQueryCountTest`, `LocationSubtreeCacheTest` |
 
 ## Testdaten (T9)
 
@@ -137,22 +155,45 @@ migrierten DB, Laufzeit ca. 10 s. Deterministisch über `setseed`, zweimal ausge
 
 | Anforderung | Umsetzung | Nachweis |
 |-------------|-----------|----------|
-| A1          | `LocationController`/`LocationService`, Zyklen-Trigger `location_no_cycle` | `location/LocationApiTest`, `SchemaConstraintsTest` |
-| A2          | `RoomController`/`RoomService`, `uq_room_location_id_name`, `ck_room_capacity` | `room/RoomApiTest`, `SchemaConstraintsTest` |
-| A3          | `RoomRepository#findFree` (native SQL, rekursive CTE über aktive Standorte, `NOT EXISTS` mit `&&`) | `room/RoomSearchTest` |
-| A4          | `BookingController`/`BookingService#create`, `ex_booking_room_id` | `booking/BookingApiTest` |
-| A5          | `BookingService#update`/`#cancel`, `@Version` | `booking/BookingApiTest` |
-| A6          | `BookingRepository#search` (JPQL-DTO-Projektion), `LocationRepository#findSubtreeIds` | `booking/BookingSearchTest` |
-| A7          | `ReportService#occupancy` (JDBC), View `v_active_booking` (V3), `GET /api/reports/occupancy` | `report/ReportApiTest` |
+| A1          | `LocationController`/`LocationService`, Zyklen-Trigger `location_no_cycle` | `location/LocationApiTest`, `SchemaConstraintsTest`, `http/locations.http` |
+| A2          | `RoomController`/`RoomService`, `uq_room_location_id_name`, `ck_room_capacity` | `room/RoomApiTest`, `SchemaConstraintsTest`, `http/rooms.http` |
+| A3          | `RoomRepository#findFree` (native SQL, rekursive CTE über aktive Standorte, `NOT EXISTS` mit `&&`) | `room/RoomSearchTest`, `http/rooms.http` |
+| A4          | `BookingController`/`BookingService#create`, `ex_booking_room_id` | `booking/BookingApiTest`, `http/bookings.http` |
+| A5          | `BookingService#update`/`#cancel`, `@Version` | `booking/BookingApiTest`, `http/bookings.http` |
+| A6          | `BookingRepository#search` (JPQL-DTO-Projektion), `LocationRepository#findSubtreeIds` | `booking/BookingSearchTest`, `http/bookings.http` |
+| A7          | `ReportService#occupancy` (JDBC), View `v_active_booking` (V3), `GET /api/reports/occupancy` | `report/ReportApiTest`, `http/reports.http` |
+| T1          | 5 Tabellen, ERD und Schemaentscheide oben; CHECK, UNIQUE, FK, Exclusion-Constraint und Zyklen-Trigger in `V1__init.sql` | `SchemaConstraintsTest` |
+| T2          | Flyway `V1`–`V4` unter `db/migration`, `ddl-auto: validate`; V2 ergänzt `booking.title` mit Backfill | `SchemaMigrationTest` (V1 → V2 mit Bestandsdaten), Neuaufbau ab leerer DB bei jedem Testlauf |
+| T3          | JPA-Entities mit Beziehungen, Records als DTOs, Controller → Service → Repository, Deaktivieren/Stornieren statt Löschen | `http/*.http`, API-Tests |
 | T4          | Serie und Termine in einer `@Transactional`-Methode, Flush pro Termin | `BookingConcurrencyTest#seriesIsRolledBackCompletelyWhenOneOccurrenceOverlaps` |
 | T5          | Exclusion-Constraint (gleichzeitige Buchung), Optimistic Locking (gleichzeitige Änderung) → 409 | `BookingConcurrencyTest` (zwei Threads) |
 | T6          | JPQL-DTO-Projektion für A6 (`BookingListItem`); parametrisierte JDBC-Auswertung mit JOIN und Aggregation über View `v_active_booking` für A7 | `booking/BookingSearchTest`, `report/ReportApiTest` |
 | T7          | Filter, Sortierung `start_time, id` und `fetch first` in SQL, Seitengrösse max. 100 | `booking/BookingSearchTest`, `BookingQueryCountTest` (SQL enthält `fetch first`) |
+| T8          | Integrationstests gegen PostgreSQL 18 (Testcontainers), kleine Testdaten pro Test | Abschnitt [Tests](#tests), `./mvnw verify` |
 | T9          | Generator `scripts/generate-data.sql` (siehe Testdaten) | Aufruf und Datensatzanzahlen oben |
 | T10         | Index `idx_booking_app_user_id_start_time` (V4) für A6 nach Benutzer und Zeitraum | [`docs/performance`](docs/performance/README.md): Pläne und 10 Messungen vor/nach V4, Kosten; `scripts/measure-booking-search.sql` |
 | T11         | Lazy-Beziehungen, A6 als DTO-Projektion statt Entities (siehe unten) | `booking/BookingQueryCountTest` |
 | T12         | `@Cacheable` auf `LocationService#findSubtreeIds` (Schlüssel = Standort-ID), Eviction nach Commit bei Anlegen/Umhängen (siehe unten) | `location/LocationSubtreeCacheTest` |
-| übrige T    | TODO      | TODO     |
+
+**T4 – Transaktion:** Eine Serienbuchung legt die Serie und bis zu 12 Termine in einer `@Transactional`-Methode an
+und flusht jeden Termin einzeln. Kollidiert der n-te Termin, schlägt das Exclusion-Constraint beim Flush an und die
+ganze Transaktion wird zurückgerollt: Die Serie und die bereits geschriebenen Termine bleiben nicht bestehen. Der
+Test belegt das nach echten Schreibzugriffen, nicht nur nach einer Eingabeprüfung.
+
+**T5 – Nebenläufigkeit:** Zwei Konflikte, zwei Strategien.
+- *Gleichzeitige Buchung desselben Zeitraums:* Überschneidungen prüft nur das Exclusion-Constraint, bewusst ohne
+  Vorabprüfung im Service. Eine Vorabprüfung würde zwei parallele Anfragen beide durchlassen; das Constraint lässt
+  genau eine gewinnen, die andere erhält 409 mit dem Constraint-Namen.
+- *Gleichzeitige Änderung derselben Buchung:* Optimistic Locking mit `@Version`. Der Client schickt die gelesene
+  `version` mit, damit ein verlorenes Update auch über zwei getrennte HTTP-Anfragen erkannt wird → 409.
+
+**T6/T7 – Abfragen:** Die Buchungsliste (A6) ist eine JPQL-DTO-Projektion: Sie liest nur die angezeigten Felder
+inkl. Raum- und Benutzername per JOIN, filtert alle Kriterien in der DB, sortiert stabil nach `start_time, id` und
+lädt nur die angeforderte Seite (`fetch first`, max. 100). Die Belegungsrate (A7) läuft über JDBC (`JdbcClient`,
+parametrisiert) auf der View `v_active_booking`, weil sie `generate_series`, Schnitte von `tstzrange` und
+Aggregationen braucht, die JPQL nicht ausdrücken kann. Gebuchte Stunden werden pro Raum aggregiert, bevor sie an die
+Räume gejoint werden, damit mehrere Buchungen pro Raum den Nenner nicht vervielfachen. Freie Räume (A3) sind natives
+SQL mit rekursiver CTE, weil JPQL keine Rekursion kennt.
 
 **T11 – Abfragen für die Buchungsliste** (jede Buchung mit eigenem Raum und Benutzer, Seitengrösse 100):
 
@@ -175,6 +216,16 @@ aller Vorfahren ändern; geleert wird erst nach dem Commit, damit parallele Anfr
 cachen. Deaktivieren ändert die IDs nicht und behält den Cache. Der Test belegt erster Zugriff (Abfrage), Treffer
 (keine Abfrage), Umhängen (neue Abfrage, aktueller Teilbaum bei altem und neuem Vorfahren), neuen Unterstandort,
 Deaktivieren und Rollback. Details und Grenzen: `docs/PLAN.md`, Entscheid Phase 7.
+
+## Einschränkungen
+
+- **Authentifizierung gemockt:** Der Header `X-User-Id` bestimmt Benutzer und Rolle, ohne Login oder Token.
+- **Belegungsrate (A7):** Feiertage werden ignoriert. Deaktivierte Räume zählen weiterhin mit, weil das Schema keinen
+  Deaktivierungszeitpunkt kennt. Auswertungen nach Wochentag/Tageszeit und Stornoquote sind nicht umgesetzt.
+- **Serien:** Nur wöchentlich, max. 12 Termine. Geändert und storniert wird pro Termin, nicht die Serie als Ganzes.
+- **Zeitgenauigkeit:** Start und Ende werden auf volle Minuten abgeschnitten, ein gröberes Raster wird nicht erzwungen.
+- **Cache (T12):** In-Memory für eine einzelne Instanz; Änderungen direkt in der DB sieht er erst nach einem Neustart.
+- **Testdaten (T9):** Schiefe Verteilung nur bei Raumbeliebtheit und Buchungen pro Benutzer, ohne Stosszeiten und Serien.
 
 ## KI und Hilfsmittel
 
