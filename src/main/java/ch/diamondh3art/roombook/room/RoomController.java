@@ -2,9 +2,12 @@ package ch.diamondh3art.roombook.room;
 
 import ch.diamondh3art.roombook.common.user.UserService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @RestController
@@ -20,6 +23,15 @@ public class RoomController {
     @GetMapping
     public List<RoomResponse> findAll() {
         return roomService.findAll();
+    }
+
+    // A3: e.g. /api/rooms/free?from=2026-10-05T09:00:00Z&to=2026-10-05T10:00:00Z&minCapacity=4&locationId=1
+    @GetMapping("/free")
+    public List<RoomResponse> findFree(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
+                                       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to,
+                                       @RequestParam(defaultValue = "1") @Positive int minCapacity,
+                                       @RequestParam(required = false) Long locationId) {
+        return roomService.findFree(from, to, minCapacity, locationId);
     }
 
     @GetMapping("/{id}")

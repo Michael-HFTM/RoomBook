@@ -31,11 +31,11 @@ und `docs/management/Projectsketch_RoomBook.pdf` (Steckbrief, A1–A7). Erledigt
 - [x] T5-Tests mit zwei Threads (`CountDownLatch`): gleichzeitige überlappende Buchung (Exclusion → genau eine gewinnt) und gleichzeitige Änderung (Optimistic Lock)
 
 ### 4. Lesezugriffe (A3, A6, T6, T7, T11)
-- [ ] Rekursive CTE für den Teilbaum einer Gruppierung (A3, A6, A7)
-- [ ] A3 Freie Räume: aktiv, Kapazität ≥ x, keine überlappende aktive Buchung
-- [ ] A6 Buchungsliste: DB-seitig filtern (Raum, Benutzer, Gruppierung, Zeitraum, Status), Sortierung `start_time, id`, Pagination (T7)
-- [ ] JPQL-DTO-Projektion für A6 (T6)
-- [ ] T11: Abfragezählung mit datasource-proxy für 1/10/100 Treffer, N+1 belegen bzw. ausschliessen, Vorher/Nachher
+- [x] Rekursive CTE für den Teilbaum einer Gruppierung (A3, A6, A7)
+- [x] A3 Freie Räume: aktiv, Kapazität ≥ x, keine überlappende aktive Buchung
+- [x] A6 Buchungsliste: DB-seitig filtern (Raum, Benutzer, Gruppierung, Zeitraum, Status), Sortierung `start_time, id`, Pagination (T7)
+- [x] JPQL-DTO-Projektion für A6 (T6)
+- [x] T11: Abfragezählung mit datasource-proxy für 1/10/100 Treffer, N+1 belegen bzw. ausschliessen, Vorher/Nachher
 
 ### 5. Auswertungen (A7, T6)
 - [ ] View `v_active_booking` (nicht storniert, mit Raum und Gruppierung)
@@ -91,3 +91,8 @@ Hier Entscheide mit Datum und kurzer Begründung festhalten.
 - 2026-09-30: Dev-Seed: Profil `dev` (aktiv bei `spring-boot:run`) ergänzt Flyway um `db/dev` mit einer idempotenten
   Repeatable-Migration (Benutzer, kleine Standorthierarchie, Räume). Nicht in `db/migration`, weil Seed-Daten nicht
   zum Schema gehören und mit den Testdaten kollidieren würden.
+- 2026-09-30: Phase 4: Ein deaktivierter Standort blendet seinen ganzen Teilbaum aus: Räume darunter sind weder frei
+  (A3) noch buchbar (A4). Die Buchungsliste (A6) zeigt dagegen auch Buchungen unter deaktivierten Standorten
+  (Historie). Drei rekursive Abfragen: Teilbaum-IDs (A6, später A7 und Cache T12), Vorfahren aktiv (A4) und für A3
+  eine CTE ab den Wurzeln nur über aktive Knoten. A6 als statische JPQL-Abfrage mit `:param IS NULL OR …` und fester
+  Sortierung `start_time, id`; Seitengrösse max. 100. `datasource-proxy` nur noch im Test-Scope.

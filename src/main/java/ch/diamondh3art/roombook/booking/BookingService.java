@@ -2,8 +2,11 @@ package ch.diamondh3art.roombook.booking;
 
 import ch.diamondh3art.roombook.common.user.AppUser;
 import ch.diamondh3art.roombook.common.user.UserService;
+import ch.diamondh3art.roombook.location.LocationService;
 import ch.diamondh3art.roombook.room.Room;
 import ch.diamondh3art.roombook.room.RoomService;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
@@ -26,14 +29,24 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final BookingSeriesRepository bookingSeriesRepository;
     private final RoomService roomService;
+    private final LocationService locationService;
     private final UserService userService;
 
     public BookingService(BookingRepository bookingRepository, BookingSeriesRepository bookingSeriesRepository,
-                          RoomService roomService, UserService userService) {
+                          RoomService roomService, LocationService locationService, UserService userService) {
         this.bookingRepository = bookingRepository;
         this.bookingSeriesRepository = bookingSeriesRepository;
         this.roomService = roomService;
+        this.locationService = locationService;
         this.userService = userService;
+    }
+
+    // A6: the location filter is resolved to its subtree first, the rest is filtered and paged in the DB
+    public PagedModel<BookingListItem> search(BookingFilter filter, int page, int size) {
+        List<Long> locationIds = filter.locationId() == null ? List.of()
+                : locationService.findSubtreeIds(filter.locationId());
+        return new PagedModel<>(bookingRepository.search(filter.roomId(), filter.userId(), filter.locationId() == null,
+                locationIds, filter.from(), filter.to(), filter.status(), PageRequest.of(page, size)));
     }
 
     public BookingResponse findById(long id) {
@@ -105,9 +118,10 @@ public class BookingService {
     }
 
     // overlaps are left to the exclusion constraint, it also covers concurrent requests (T5)
-    private static void validate(Room room, OffsetDateTime start, OffsetDateTime end) {
-        if (!room.isActive()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Room " + room.getId() + " is deactivated");
+    private void validate(Room room, OffsetDateTime start, OffsetDateTime end) {
+        if (!room.isActive() || !locationService.isActiveWithAncestors(room.getLocation())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Room " + room.getId() + " or one of its locations is deactivated");
         }
         if (!start.isBefore(end)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start time must be before end time");

@@ -127,6 +127,17 @@ class BookingApiTest {
     }
 
     @Test
+    void roomBelowDeactivatedLocationIsNotBookable() {
+        Location branch = locationRepository.save(new Location(null, "Branch", LocationType.BRANCH));
+        Location floor = locationRepository.save(new Location(branch, "Floor 2", LocationType.FLOOR));
+        room = roomRepository.save(new Room(floor, "Room 2", 8));
+        branch.deactivate();
+        locationRepository.flush();
+
+        assertThat(post(userId, body(START, END, null))).hasStatus(HttpStatus.CONFLICT);
+    }
+
+    @Test
     void overlappingBookingIsConflict() {
         post(userId, body(START, END, null));
 

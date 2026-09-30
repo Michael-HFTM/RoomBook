@@ -53,6 +53,20 @@ public class LocationService {
         getLocation(id).deactivate();
     }
 
+    // subtree ids for filters on a location including all sub-levels (A6, A7)
+    public List<Long> findSubtreeIds(long id) {
+        List<Long> ids = locationRepository.findSubtreeIds(id);
+        if (ids.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Location " + id + " not found");
+        }
+        return ids;
+    }
+
+    // a location only counts as active if all its ancestors are active too
+    public boolean isActiveWithAncestors(Location location) {
+        return locationRepository.isActiveWithAncestors(location.getId());
+    }
+
     // also used by RoomService to resolve the location of a room
     public Location getLocation(long id) {
         return locationRepository.findById(id)

@@ -122,6 +122,8 @@
             <groupId>net.ttddyy</groupId>
             <artifactId>datasource-proxy</artifactId>
             <version>${datasource-proxy.version}</version>
+            <!-- query counting in tests (T7, T11) -->
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
