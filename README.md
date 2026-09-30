@@ -124,10 +124,10 @@ Swagger UI: http://localhost:8080/swagger-ui.html
 | A4          | `BookingController`/`BookingService#create`, `ex_booking_room_id` | `booking/BookingApiTest` |
 | A5          | `BookingService#update`/`#cancel`, `@Version` | `booking/BookingApiTest` |
 | A6          | `BookingRepository#search` (JPQL-DTO-Projektion), `LocationRepository#findSubtreeIds` | `booking/BookingSearchTest` |
-| A7          | TODO      | TODO     |
+| A7          | `ReportService#occupancy` (JDBC), View `v_active_booking` (V3), `GET /api/reports/occupancy` | `report/ReportApiTest` |
 | T4          | Serie und Termine in einer `@Transactional`-Methode, Flush pro Termin | `BookingConcurrencyTest#seriesIsRolledBackCompletelyWhenOneOccurrenceOverlaps` |
 | T5          | Exclusion-Constraint (gleichzeitige Buchung), Optimistic Locking (gleichzeitige Änderung) → 409 | `BookingConcurrencyTest` (zwei Threads) |
-| T6          | JPQL-DTO-Projektion für A6 (`BookingListItem`); JDBC-Auswertung und View folgen mit A7 | `booking/BookingSearchTest` |
+| T6          | JPQL-DTO-Projektion für A6 (`BookingListItem`); parametrisierte JDBC-Auswertung mit JOIN und Aggregation über View `v_active_booking` für A7 | `booking/BookingSearchTest`, `report/ReportApiTest` |
 | T7          | Filter, Sortierung `start_time, id` und `fetch first` in SQL, Seitengrösse max. 100 | `booking/BookingSearchTest`, `BookingQueryCountTest` (SQL enthält `fetch first`) |
 | T11         | Lazy-Beziehungen, A6 als DTO-Projektion statt Entities (siehe unten) | `booking/BookingQueryCountTest` |
 | übrige T    | TODO      | TODO     |
