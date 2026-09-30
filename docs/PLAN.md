@@ -61,3 +61,6 @@ und `docs/management/Projectsketch_RoomBook.pdf` (Steckbrief, A1–A7). Erledigt
 Hier Entscheide mit Datum und kurzer Begründung festhalten.
 
 - 2026-09-25: PostgreSQL 18, Flyway als einzige Schemaquelle (`ddl-auto: validate`), `open-in-view: false`.
+- 2026-09-30: Enums als `varchar` mit CHECK: `LocationType` (BRANCH, BUILDING, FLOOR), `Role` (USER, ADMIN),
+  `RecurrenceRule` (nur WEEKLY, A4 verlangt nichts anderes; kein RRULE-Parsing). Deaktivieren statt Löschen für
+  Standorte und Räume; stornierte Buchungen sind nicht mehr verschiebbar.
