@@ -1,0 +1,11 @@
+### A7 Belegungsrate auswerten (Mo–Fr 07:00–18:00 Europe/Zurich, "to" inklusive)
+# Voraussetzung: ./mvnw spring-boot:run (Umgebung "dev" oder "testdata"); aussagekräftige Werte nach scripts/generate-data.sql (siehe README, T9)
+
+### Alle Räume, ein Monat, sortiert nach Belegungsrate
+GET {{host}}/api/reports/occupancy?from=2026-03-01&to=2026-03-31
+
+### Nur ein Standort inkl. Unterebenen
+GET {{host}}/api/reports/occupancy?from=2026-03-01&to=2026-03-31&locationId=1
+
+### Unbekannter Standort → 404
+GET {{host}}/api/reports/occupancy?from=2026-03-01&to=2026-03-31&locationId=999999

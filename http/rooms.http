@@ -1,0 +1,64 @@
+### A2 Räume verwalten, A3 freie Räume suchen
+# Voraussetzung: ./mvnw spring-boot:run (Umgebung "dev" = Dev-Seed, "testdata" = nach scripts/generate-data.sql)
+
+### Etage für die Beispiele anlegen
+POST {{host}}/api/locations
+X-User-Id: {{admin}}
+Content-Type: application/json
+
+{ "parentId": null, "name": "Raum-Beispiele {{$random.uuid}}", "type": "FLOOR" }
+
+> {% client.global.set("floorId", response.body.id); %}
+
+### Raum anlegen → 201
+POST {{host}}/api/rooms
+X-User-Id: {{admin}}
+Content-Type: application/json
+
+{ "locationId": {{floorId}}, "name": "Sitzungszimmer Limmat", "capacity": 10 }
+
+> {% client.global.set("roomId", response.body.id); %}
+
+### Ändern (Kapazität) → 200
+PUT {{host}}/api/rooms/{{roomId}}
+X-User-Id: {{admin}}
+Content-Type: application/json
+
+{ "locationId": {{floorId}}, "name": "Sitzungszimmer Limmat", "capacity": 12 }
+
+### Gleicher Name am selben Standort → 409 (uq_room_location_id_name)
+POST {{host}}/api/rooms
+X-User-Id: {{admin}}
+Content-Type: application/json
+
+{ "locationId": {{floorId}}, "name": "Sitzungszimmer Limmat", "capacity": 4 }
+
+### Kapazität 0 → 400
+POST {{host}}/api/rooms
+X-User-Id: {{admin}}
+Content-Type: application/json
+
+{ "locationId": {{floorId}}, "name": "Besenkammer", "capacity": 0 }
+
+### Kein Admin → 403
+POST {{host}}/api/rooms
+X-User-Id: {{alice}}
+Content-Type: application/json
+
+{ "locationId": {{floorId}}, "name": "Fokusraum", "capacity": 2 }
+
+### Alle Räume
+GET {{host}}/api/rooms
+
+### A3: freie Räume mit mindestens 10 Plätzen im Zeitraum (ganze Hierarchie)
+GET {{host}}/api/rooms/free?from=2026-11-02T09:00:00%2B01:00&to=2026-11-02T10:00:00%2B01:00&minCapacity=10
+
+### A3: nur unterhalb eines Standorts
+GET {{host}}/api/rooms/free?from=2026-11-02T09:00:00%2B01:00&to=2026-11-02T10:00:00%2B01:00&locationId={{floorId}}
+
+### Deaktivieren → 204
+DELETE {{host}}/api/rooms/{{roomId}}
+X-User-Id: {{admin}}
+
+### Deaktivierter Raum erscheint nicht mehr als frei
+GET {{host}}/api/rooms/free?from=2026-11-02T09:00:00%2B01:00&to=2026-11-02T10:00:00%2B01:00&locationId={{floorId}}
