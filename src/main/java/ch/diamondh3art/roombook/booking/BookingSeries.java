@@ -9,10 +9,11 @@ public class BookingSeries {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "booking_series_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "app_user_id", nullable = false)
     private AppUser user;
 
     @Enumerated(EnumType.STRING)

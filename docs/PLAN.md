@@ -6,7 +6,7 @@ und `docs/management/Projectsketch_RoomBook.pdf` (Steckbrief, A1–A7). Erledigt
 ## Phasen
 
 ### 1. Schema und Migrationen (T1, T2)
-- [ ] `V1__init.sql`: `btree_gist`, Tabellen `location` (selbstreferenzierend), `room`, `app_user`, `booking_series`, `booking`
+- [x] `V1__init.sql`: `btree_gist`, Tabellen `location` (selbstreferenzierend), `room`, `app_user`, `booking_series`, `booking`
   - CHECK `start_time < end_time`, CHECK `capacity > 0`, UNIQUE `(location_id, name)`, CHECK auf Enum-Werte (`status`, `type`, `role`)
   - Exclusion-Constraint: `EXCLUDE USING gist (room_id WITH =, tstzrange(start_time, end_time) WITH &&) WHERE (status <> 'CANCELLED')`
   - Zyklenschutz der Hierarchie als DB-Trigger (Regel nicht nur in der API)
@@ -64,3 +64,9 @@ Hier Entscheide mit Datum und kurzer Begründung festhalten.
 - 2026-09-30: Enums als `varchar` mit CHECK: `LocationType` (BRANCH, BUILDING, FLOOR), `Role` (USER, ADMIN),
   `RecurrenceRule` (nur WEEKLY, A4 verlangt nichts anderes; kein RRULE-Parsing). Deaktivieren statt Löschen für
   Standorte und Räume; stornierte Buchungen sind nicht mehr verschiebbar.
+- 2026-09-30: V1: IDs als `GENERATED ALWAYS AS IDENTITY`. Zyklen-Trigger nur auf `UPDATE OF parent_location_id`, weil ein neuer
+  Knoten noch nicht Vorfahre sein kann; ein Advisory-Lock serialisiert parallele Umhängungen. Kein Index auf
+  `booking(app_user_id, start_time)` in V1, er kommt als eigene Migration für die T10-Messung.
+- 2026-09-30: Benennung nach Unterrichtskonvention: Tabellen Singular/snake_case, PK-Spalte `<tabelle>_id`, FK-Spalte
+  `<reftabelle>_id` (Selbstreferenz `parent_location_id`); Constraints `pk_<tabelle>`, `fk_<tabelle>_<reftabelle>`,
+  `uq_/ck_<tabelle>_<spalte>`, `ex_` für Exclusion, Indizes `idx_<tabelle>_<spalte>`.
