@@ -149,6 +149,7 @@ migrierten DB, Laufzeit ca. 10 s. Deterministisch über `setseed`, zweimal ausge
 | T6          | JPQL-DTO-Projektion für A6 (`BookingListItem`); parametrisierte JDBC-Auswertung mit JOIN und Aggregation über View `v_active_booking` für A7 | `booking/BookingSearchTest`, `report/ReportApiTest` |
 | T7          | Filter, Sortierung `start_time, id` und `fetch first` in SQL, Seitengrösse max. 100 | `booking/BookingSearchTest`, `BookingQueryCountTest` (SQL enthält `fetch first`) |
 | T9          | Generator `scripts/generate-data.sql` (siehe Testdaten) | Aufruf und Datensatzanzahlen oben |
+| T10         | Index `idx_booking_app_user_id_start_time` (V4) für A6 nach Benutzer und Zeitraum | [`docs/performance`](docs/performance/README.md): Pläne und 10 Messungen vor/nach V4, Kosten; `scripts/measure-booking-search.sql` |
 | T11         | Lazy-Beziehungen, A6 als DTO-Projektion statt Entities (siehe unten) | `booking/BookingQueryCountTest` |
 | übrige T    | TODO      | TODO     |
 

@@ -1,0 +1,209 @@
+Pager usage is off.
+                                                      version                                                       
+--------------------------------------------------------------------------------------------------------------------
+ PostgreSQL 18.6 (Debian 18.6-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+(1 row)
+
+           indexname           
+-------------------------------
+ ex_booking_room_id
+ idx_booking_booking_series_id
+ pk_booking
+(3 rows)
+
+PREPARE
+PREPARE
+CREATE FUNCTION
+=== custom plan (parameters known at planning) ===
+SET
+                                                                                                    QUERY PLAN                                                                                                     
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=4905.63..4907.91 rows=20 width=69) (actual time=13.090..16.595 rows=6.00 loops=1)
+   Buffers: shared hit=2150
+   ->  Gather Merge  (cost=4905.63..4912.58 rows=61 width=69) (actual time=13.085..16.590 rows=6.00 loops=1)
+         Workers Planned: 1
+         Workers Launched: 1
+         Buffers: shared hit=2150
+         ->  Sort  (cost=3905.62..3905.71 rows=36 width=69) (actual time=8.337..8.340 rows=3.00 loops=2)
+               Sort Key: b1_0.start_time, b1_0.booking_id
+               Sort Method: quicksort  Memory: 25kB
+               Buffers: shared hit=2150
+               Worker 0:  Sort Method: quicksort  Memory: 25kB
+               ->  Nested Loop  (cost=6.77..3904.69 rows=36 width=69) (actual time=0.942..8.240 rows=3.00 loops=2)
+                     Buffers: shared hit=2132
+                     ->  Hash Join  (cost=6.50..3895.95 rows=36 width=62) (actual time=0.851..8.144 rows=3.00 loops=2)
+                           Hash Cond: (b1_0.room_id = r1_0.room_id)
+                           Buffers: shared hit=2125
+                           ->  Parallel Seq Scan on booking b1_0  (cost=0.00..3889.35 rows=36 width=55) (actual time=0.613..7.900 rows=3.00 loops=2)
+                                 Filter: ((end_time > '2026-02-28 23:00:00+00'::timestamp with time zone) AND (start_time < '2026-03-31 22:00:00+00'::timestamp with time zone) AND (app_user_id = '496'::bigint))
+                                 Rows Removed by Filter: 85888
+                                 Buffers: shared hit=2121
+                           ->  Hash  (cost=4.00..4.00 rows=200 width=15) (actual time=0.145..0.146 rows=200.00 loops=2)
+                                 Buckets: 1024  Batches: 1  Memory Usage: 18kB
+                                 Buffers: shared hit=4
+                                 ->  Seq Scan on room r1_0  (cost=0.00..4.00 rows=200 width=15) (actual time=0.037..0.056 rows=200.00 loops=2)
+                                       Buffers: shared hit=4
+                     ->  Materialize  (cost=0.27..8.30 rows=1 width=15) (actual time=0.030..0.030 rows=1.00 loops=6)
+                           Storage: Memory  Maximum Storage: 17kB
+                           Buffers: shared hit=7
+                           ->  Index Scan using pk_app_user on app_user u1_0  (cost=0.27..8.29 rows=1 width=15) (actual time=0.064..0.064 rows=1.00 loops=2)
+                                 Index Cond: (app_user_id = '496'::bigint)
+                                 Index Searches: 2
+                                 Buffers: shared hit=7
+ Planning:
+   Buffers: shared hit=246
+ Planning Time: 1.406 ms
+ Execution Time: 17.086 ms
+(36 rows)
+
+                                                                                                    QUERY PLAN                                                                                                     
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Finalize Aggregate  (cost=4905.00..4905.01 rows=1 width=8) (actual time=10.294..13.455 rows=1.00 loops=1)
+   Buffers: shared hit=2126
+   ->  Gather  (cost=4904.78..4904.99 rows=2 width=8) (actual time=10.142..13.450 rows=2.00 loops=1)
+         Workers Planned: 1
+         Workers Launched: 1
+         Buffers: shared hit=2126
+         ->  Partial Aggregate  (cost=3904.78..3904.79 rows=1 width=8) (actual time=6.915..6.917 rows=1.00 loops=2)
+               Buffers: shared hit=2126
+               ->  Nested Loop  (cost=6.77..3904.69 rows=36 width=0) (actual time=2.181..6.913 rows=3.00 loops=2)
+                     Buffers: shared hit=2126
+                     ->  Hash Join  (cost=6.50..3895.95 rows=36 width=8) (actual time=2.167..6.895 rows=3.00 loops=2)
+                           Hash Cond: (b1_0.room_id = r1_0.room_id)
+                           Buffers: shared hit=2123
+                           ->  Parallel Seq Scan on booking b1_0  (cost=0.00..3889.35 rows=36 width=16) (actual time=2.140..6.864 rows=3.00 loops=2)
+                                 Filter: ((end_time > '2026-02-28 23:00:00+00'::timestamp with time zone) AND (start_time < '2026-03-31 22:00:00+00'::timestamp with time zone) AND (app_user_id = '496'::bigint))
+                                 Rows Removed by Filter: 85888
+                                 Buffers: shared hit=2121
+                           ->  Hash  (cost=4.00..4.00 rows=200 width=8) (actual time=0.050..0.050 rows=200.00 loops=1)
+                                 Buckets: 1024  Batches: 1  Memory Usage: 16kB
+                                 Buffers: shared hit=2
+                                 ->  Seq Scan on room r1_0  (cost=0.00..4.00 rows=200 width=8) (actual time=0.006..0.020 rows=200.00 loops=1)
+                                       Buffers: shared hit=2
+                     ->  Materialize  (cost=0.27..8.30 rows=1 width=8) (actual time=0.005..0.005 rows=1.00 loops=6)
+                           Storage: Memory  Maximum Storage: 17kB
+                           Buffers: shared hit=3
+                           ->  Index Only Scan using pk_app_user on app_user u1_0  (cost=0.27..8.29 rows=1 width=8) (actual time=0.024..0.025 rows=1.00 loops=1)
+                                 Index Cond: (app_user_id = '496'::bigint)
+                                 Heap Fetches: 1
+                                 Index Searches: 1
+                                 Buffers: shared hit=3
+ Planning:
+   Buffers: shared hit=13
+ Planning Time: 0.359 ms
+ Execution Time: 13.491 ms
+(34 rows)
+
+ query | runs | min_ms | median_ms | max_ms 
+-------+------+--------+-----------+--------
+ list  |   10 | 12.148 |    12.623 | 13.885
+ count |   10 | 12.184 |    12.398 | 13.509
+(2 rows)
+
+=== generic plan (parameters unknown at planning) ===
+SET
+                                                                                                                 QUERY PLAN                                                                                                                  
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=4933.79..4933.79 rows=1 width=69) (actual time=13.112..16.428 rows=6.00 loops=1)
+   Buffers: shared hit=2129
+   ->  Sort  (cost=4933.79..4933.79 rows=1 width=69) (actual time=13.110..16.426 rows=6.00 loops=1)
+         Sort Key: b1_0.start_time, b1_0.booking_id
+         Sort Method: quicksort  Memory: 25kB
+         Buffers: shared hit=2129
+         ->  Result  (cost=1004.52..4933.78 rows=1 width=69) (actual time=0.587..16.413 rows=6.00 loops=1)
+               One-Time Filter: $3
+               Buffers: shared hit=2129
+               ->  Nested Loop  (cost=1004.52..4933.78 rows=1 width=69) (actual time=0.586..16.409 rows=6.00 loops=1)
+                     Join Filter: (u1_0.app_user_id = b1_0.app_user_id)
+                     Rows Removed by Join Filter: 7213
+                     Buffers: shared hit=2129
+                     ->  Gather  (cost=1004.52..4919.11 rows=98 width=62) (actual time=0.360..14.895 rows=7219.00 loops=1)
+                           Workers Planned: 1
+                           Workers Launched: 1
+                           Buffers: shared hit=2125
+                           ->  Hash Join  (cost=4.53..3909.31 rows=58 width=62) (actual time=0.094..9.142 rows=3609.50 loops=2)
+                                 Hash Cond: (b1_0.room_id = r1_0.room_id)
+                                 Buffers: shared hit=2125
+                                 ->  Parallel Seq Scan on booking b1_0  (cost=0.00..3889.35 rows=5755 width=55) (actual time=0.029..8.496 rows=3609.50 loops=2)
+                                       Filter: (((($4)::timestamp(6) with time zone IS NULL) OR (end_time > $4)) AND ((($5)::timestamp(6) with time zone IS NULL) OR (start_time < $5)) AND (($6 IS NULL) OR ((status)::text = ($6)::text)))
+                                       Rows Removed by Filter: 82282
+                                       Buffers: shared hit=2121
+                                 ->  Hash  (cost=4.50..4.50 rows=2 width=15) (actual time=0.055..0.056 rows=200.00 loops=2)
+                                       Buckets: 1024  Batches: 1  Memory Usage: 18kB
+                                       Buffers: shared hit=4
+                                       ->  Seq Scan on room r1_0  (cost=0.00..4.50 rows=2 width=15) (actual time=0.012..0.031 rows=200.00 loops=2)
+                                             Filter: (($1 IS NULL) OR (room_id = $1))
+                                             Buffers: shared hit=4
+                     ->  Materialize  (cost=0.00..10.27 rows=3 width=15) (actual time=0.000..0.000 rows=1.00 loops=7219)
+                           Storage: Memory  Maximum Storage: 17kB
+                           Buffers: shared hit=4
+                           ->  Seq Scan on app_user u1_0  (cost=0.00..10.25 rows=3 width=15) (actual time=0.032..0.033 rows=1.00 loops=1)
+                                 Filter: (($2 IS NULL) OR (app_user_id = $2))
+                                 Rows Removed by Filter: 499
+                                 Buffers: shared hit=4
+ Planning:
+   Buffers: shared hit=10
+ Planning Time: 0.378 ms
+ Execution Time: 16.468 ms
+(41 rows)
+
+                                                                                                              QUERY PLAN                                                                                                               
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=4919.60..4919.61 rows=1 width=8) (actual time=12.106..15.461 rows=1.00 loops=1)
+   Buffers: shared hit=2133
+   ->  Gather  (cost=1014.81..4919.60 rows=1 width=0) (actual time=0.643..15.453 rows=6.00 loops=1)
+         Workers Planned: 1
+         Workers Launched: 1
+         Buffers: shared hit=2133
+         ->  Result  (cost=14.81..3919.50 rows=1 width=0) (actual time=1.000..9.034 rows=3.00 loops=2)
+               One-Time Filter: $3
+               Buffers: shared hit=2133
+               ->  Hash Join  (cost=14.81..3919.50 rows=1 width=0) (actual time=0.999..9.031 rows=3.00 loops=2)
+                     Hash Cond: (b1_0.room_id = r1_0.room_id)
+                     Buffers: shared hit=2133
+                     ->  Hash Join  (cost=10.29..3914.88 rows=35 width=8) (actual time=0.923..8.952 rows=3.00 loops=2)
+                           Hash Cond: (b1_0.app_user_id = u1_0.app_user_id)
+                           Buffers: shared hit=2129
+                           ->  Parallel Seq Scan on booking b1_0  (cost=0.00..3889.35 rows=5755 width=16) (actual time=0.030..8.686 rows=3609.50 loops=2)
+                                 Filter: (((($4)::timestamp(6) with time zone IS NULL) OR (end_time > $4)) AND ((($5)::timestamp(6) with time zone IS NULL) OR (start_time < $5)) AND (($6 IS NULL) OR ((status)::text = ($6)::text)))
+                                 Rows Removed by Filter: 82282
+                                 Buffers: shared hit=2121
+                           ->  Hash  (cost=10.25..10.25 rows=3 width=8) (actual time=0.051..0.052 rows=1.00 loops=2)
+                                 Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                                 Buffers: shared hit=8
+                                 ->  Seq Scan on app_user u1_0  (cost=0.00..10.25 rows=3 width=8) (actual time=0.048..0.048 rows=1.00 loops=2)
+                                       Filter: (($2 IS NULL) OR (app_user_id = $2))
+                                       Rows Removed by Filter: 499
+                                       Buffers: shared hit=8
+                     ->  Hash  (cost=4.50..4.50 rows=2 width=8) (actual time=0.064..0.065 rows=200.00 loops=2)
+                           Buckets: 1024  Batches: 1  Memory Usage: 16kB
+                           Buffers: shared hit=4
+                           ->  Seq Scan on room r1_0  (cost=0.00..4.50 rows=2 width=8) (actual time=0.015..0.035 rows=200.00 loops=2)
+                                 Filter: (($1 IS NULL) OR (room_id = $1))
+                                 Buffers: shared hit=4
+ Planning:
+   Buffers: shared hit=10
+ Planning Time: 0.375 ms
+ Execution Time: 15.504 ms
+(36 rows)
+
+ query | runs | min_ms | median_ms | max_ms 
+-------+------+--------+-----------+--------
+ list  |   10 | 15.967 |    16.466 | 17.556
+ count |   10 | 14.232 |    14.942 | 16.586
+(2 rows)
+
+=== auto (default): which plan does PostgreSQL choose after repeated executions? ===
+RESET
+DEALLOCATE ALL
+PREPARE
+ runs | min_ms | median_ms | max_ms 
+------+--------+-----------+--------
+   10 | 12.000 |    12.369 | 13.059
+(1 row)
+
+ name | generic_plans | custom_plans 
+------+---------------+--------------
+ list |             0 |           11
+(1 row)
+
