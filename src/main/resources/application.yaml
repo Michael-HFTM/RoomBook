@@ -5,3 +5,6 @@ spring:
     open-in-view: false        # lazy loading only inside transactions (T11)
     hibernate:
       ddl-auto: validate       # schema comes exclusively from Flyway (T2)
+  cache:
+    type: simple               # in-memory ConcurrentMap, single instance (T12)
+    cache-names: locationSubtree

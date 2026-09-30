@@ -151,6 +151,7 @@ migrierten DB, Laufzeit ca. 10 s. Deterministisch über `setseed`, zweimal ausge
 | T9          | Generator `scripts/generate-data.sql` (siehe Testdaten) | Aufruf und Datensatzanzahlen oben |
 | T10         | Index `idx_booking_app_user_id_start_time` (V4) für A6 nach Benutzer und Zeitraum | [`docs/performance`](docs/performance/README.md): Pläne und 10 Messungen vor/nach V4, Kosten; `scripts/measure-booking-search.sql` |
 | T11         | Lazy-Beziehungen, A6 als DTO-Projektion statt Entities (siehe unten) | `booking/BookingQueryCountTest` |
+| T12         | `@Cacheable` auf `LocationService#findSubtreeIds` (Schlüssel = Standort-ID), Eviction nach Commit bei Anlegen/Umhängen (siehe unten) | `location/LocationSubtreeCacheTest` |
 | übrige T    | TODO      | TODO     |
 
 **T11 – Abfragen für die Buchungsliste** (jede Buchung mit eigenem Raum und Benutzer, Seitengrösse 100):
@@ -165,6 +166,15 @@ Beim Laden der Entities löst jeder Zugriff auf Raumname und Benutzername eine e
 Die Liste braucht nur diese zwei Felder, deshalb liest die DTO-Projektion sie per JOIN in einer Abfrage. Die
 zweite Abfrage bei 100 Treffern ist der Count für die Pagination; Spring Data lässt ihn weg, wenn die erste Seite
 nicht voll ist.
+
+**T12 – Cache für den Standort-Teilbaum:** Die Buchungsliste (A6) löst einen Standortfilter per rekursiver CTE in
+die IDs des Teilbaums auf. Die Hierarchie ändert sich selten, deshalb wird die ID-Liste pro Standort-ID gecacht
+(In-Memory, eine Instanz, keine TTL). Ein veralteter Teilbaum würde falsche Filterergebnisse liefern, deshalb gilt:
+nach jeder committeten Änderung sofort aktuell. Anlegen und Umhängen leeren den ganzen Cache, weil sich die Teilbäume
+aller Vorfahren ändern; geleert wird erst nach dem Commit, damit parallele Anfragen den alten Stand nicht wieder
+cachen. Deaktivieren ändert die IDs nicht und behält den Cache. Der Test belegt erster Zugriff (Abfrage), Treffer
+(keine Abfrage), Umhängen (neue Abfrage, aktueller Teilbaum bei altem und neuem Vorfahren), neuen Unterstandort,
+Deaktivieren und Rollback. Details und Grenzen: `docs/PLAN.md`, Entscheid Phase 7.
 
 ## KI und Hilfsmittel
 
