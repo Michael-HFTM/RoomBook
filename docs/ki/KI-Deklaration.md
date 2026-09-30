@@ -12,7 +12,7 @@ Thema und fachliche Grundidee stammen von mir. Den Projektsteckbrief habe ich au
 KI-Unterstützung ausformuliert und die Vorschläge geprüft. KI-Vorschläge zu Code und Dokumentation habe ich geprüft,
 angepasst und durch automatisierte Tests gegen PostgreSQL abgesichert.
 
-Michael Gasser, _Ort, Datum_
+Michael Gasser, Bowil, 30.09.2026
 
 ## Hilfsmittelverzeichnis
 
@@ -44,4 +44,4 @@ Zusammengefasst pro Arbeitspaket. Die Prompts sind sinngemäss wiedergegeben.
 | 14 | Testdaten (Phase 6, T9) | Wie gehe ich Phase 6 an? Ist der Generator nicht zu aufwendig? Setze ihn in der vereinfachten Form um … | ja | Vorgehen hinterfragt und Vereinfachung verlangt, Umsetzung und Verteilung geprüft | `scripts/generate-data.sql`, `README.md`, `docs/PLAN.md` |
 | 15 | Performanceanalyse (Phase 6, T10) | Setze Ausgangsmessung und V4-Index gemäss Vorgehen um … | ja | Vorgehen und Reihenfolge bestätigt, Messergebnisse und Entscheid (kein `plan_cache_mode`) geprüft | `scripts/measure-booking-search.sql`, `V4__booking_index_user_start_time.sql`, `docs/performance/`, `README.md`, `docs/PLAN.md` |
 | 16 | Cache (Phase 7, T12) | Eignet sich die im Plan notierte Stelle für T12 noch am besten? Plan anpassen und umsetzen … | teilweise | Kandidat mit Alternativen (A7-Bericht, Aktiv-Prüfung A4) verglichen und bestätigt, Korrekturen (ganzen Cache leeren, Eviction nach Commit) geprüft, Umsetzung und Tests geprüft | `LocationService.java`, `RoomBookApplication.java`, `application.yaml`, `LocationSubtreeCacheTest.java`, `README.md`, `docs/PLAN.md` |
-| 17 | Abgabe-Doku (Phase 8) | Was fehlt noch, sind alle Anforderungen abgedeckt? Arbeite die offenen Punkte Schritt für Schritt ab … | teilweise | Lückenanalyse geprüft, `.http`-Aufrufe gegen die laufende App nachvollzogen, README-Texte (Entscheide, Einschränkungen) geprüft | `http/`, `README.md`, `docs/PLAN.md` |
+| 17 | Abgabe-Doku (Phase 8) | Was fehlt noch, sind alle Anforderungen abgedeckt? Arbeite die offenen Punkte Schritt für Schritt ab … | teilweise | Lückenanalyse geprüft, `.http`-Aufrufe gegen die laufende App nachvollzogen, README-Texte (Entscheide, Einschränkungen) geprüft und leicht überarbeitet | `http/`, `README.md`, `docs/PLAN.md` |
