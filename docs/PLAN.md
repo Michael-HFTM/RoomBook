@@ -13,7 +13,7 @@ und `docs/management/Projectsketch_RoomBook.pdf` (Steckbrief, A1–A7). Erledigt
 - [x] `SchemaConstraintsTest`: DB-Regeln aus V1 direkt per SQL geprüft (Exclusion, CHECKs, UNIQUE, Zyklen-Trigger)
 - [x] `V2__booking_add_title.sql`: `booking.title` mit Backfill aus Raumname, danach `NOT NULL` und CHECK gegen leere Titel
 - [x] Test: Neuaufbau ab leerer DB (Spring-Kontext) und Übergang V1 → V2 mit Bestandsdaten (`SchemaMigrationTest`, Flyway `target`)
-- [ ] ER-Diagramm (Mermaid im README) und Begründung der Schemaentscheide
+- [x] ER-Diagramm (Mermaid im README) und Begründung der Schemaentscheide
 
 ### 2. Entities und CRUD (T3, A1, A2)
 - [ ] Paketstruktur pro Fachbereich: `location`, `room`, `booking`, `report`, `common`; je Controller → Service → Repository, DTOs als Records
