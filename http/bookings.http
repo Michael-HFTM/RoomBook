@@ -1,0 +1,103 @@
+### A4 Buchung/Serienbuchung, A5 ändern/stornieren, A6 Buchungen einsehen
+# Voraussetzung: ./mvnw spring-boot:run (Umgebung "dev" = Dev-Seed, "testdata" = nach scripts/generate-data.sql)
+# Zeiten mit Offset; in der URL wird "+" als %2B geschrieben.
+
+### Eigener Raum, damit die Aufrufe wiederholbar sind
+POST {{host}}/api/locations
+X-User-Id: {{admin}}
+Content-Type: application/json
+
+{ "parentId": null, "name": "Buchungs-Beispiele {{$random.uuid}}", "type": "FLOOR" }
+
+> {% client.global.set("floorId", response.body.id); %}
+
+###
+POST {{host}}/api/rooms
+X-User-Id: {{admin}}
+Content-Type: application/json
+
+{ "locationId": {{floorId}}, "name": "Projektraum", "capacity": 6 }
+
+> {% client.global.set("roomId", response.body.id); %}
+
+### A4 Einzelbuchung (alice) → 201
+POST {{host}}/api/bookings
+X-User-Id: {{alice}}
+Content-Type: application/json
+
+{ "roomId": {{roomId}}, "startTime": "2026-11-02T09:00:00+01:00", "endTime": "2026-11-02T10:00:00+01:00", "title": "Sprint Review" }
+
+> {% client.global.set("bookingId", response.body[0].id); %}
+
+### A4 Überschneidung (bob) → 409 (Exclusion-Constraint)
+POST {{host}}/api/bookings
+X-User-Id: {{bob}}
+Content-Type: application/json
+
+{ "roomId": {{roomId}}, "startTime": "2026-11-02T09:30:00+01:00", "endTime": "2026-11-02T10:30:00+01:00", "title": "Kollision" }
+
+### A4 Direkt anschliessende Buchung ist erlaubt → 201
+POST {{host}}/api/bookings
+X-User-Id: {{bob}}
+Content-Type: application/json
+
+{ "roomId": {{roomId}}, "startTime": "2026-11-02T10:00:00+01:00", "endTime": "2026-11-02T11:00:00+01:00", "title": "Anschluss" }
+
+### A4 Serie: 4 Wochen, jeden Dienstag → 201 mit 4 Terminen
+POST {{host}}/api/bookings
+X-User-Id: {{alice}}
+Content-Type: application/json
+
+{ "roomId": {{roomId}}, "startTime": "2026-11-03T14:00:00+01:00", "endTime": "2026-11-03T15:00:00+01:00", "title": "Weekly", "occurrences": 4 }
+
+### T4 Serie, deren 3. Termin mit der Serie oben kollidiert → 409, kein Termin bleibt bestehen
+POST {{host}}/api/bookings
+X-User-Id: {{bob}}
+Content-Type: application/json
+
+{ "roomId": {{roomId}}, "startTime": "2026-11-03T14:30:00+01:00", "endTime": "2026-11-03T15:30:00+01:00", "title": "Rollback", "occurrences": 3 }
+
+### Nachweis Rollback: bob hat im Raum nur die Anschlussbuchung
+GET {{host}}/api/bookings?roomId={{roomId}}&userId={{bob}}
+
+### A5 Buchung lesen (version merken)
+GET {{host}}/api/bookings/{{bookingId}}
+
+> {% client.global.set("version", response.body.version); %}
+
+### A5 Fremde Buchung ändern (bob) → 403
+PUT {{host}}/api/bookings/{{bookingId}}
+X-User-Id: {{bob}}
+Content-Type: application/json
+
+{ "startTime": "2026-11-02T08:00:00+01:00", "endTime": "2026-11-02T09:00:00+01:00", "title": "Übernommen", "version": {{version}} }
+
+### A5 Verschieben (alice, gelesene version) → 200, version erhöht
+PUT {{host}}/api/bookings/{{bookingId}}
+X-User-Id: {{alice}}
+Content-Type: application/json
+
+{ "startTime": "2026-11-02T08:00:00+01:00", "endTime": "2026-11-02T09:00:00+01:00", "title": "Sprint Review", "version": {{version}} }
+
+### A5 Nochmals mit veralteter version → 409 (verlorenes Update erkannt)
+PUT {{host}}/api/bookings/{{bookingId}}
+X-User-Id: {{alice}}
+Content-Type: application/json
+
+{ "startTime": "2026-11-02T07:00:00+01:00", "endTime": "2026-11-02T08:00:00+01:00", "title": "Sprint Review", "version": {{version}} }
+
+### A5 Stornieren (Admin) → 204, Status CANCELLED
+DELETE {{host}}/api/bookings/{{bookingId}}
+X-User-Id: {{admin}}
+
+### A6 Liste: Raum und Zeitraum, erste Seite à 2 (Sortierung start_time, id)
+GET {{host}}/api/bookings?roomId={{roomId}}&from=2026-11-01T00:00:00%2B01:00&to=2026-12-01T00:00:00%2B01:00&size=2&page=0
+
+### A6 Liste: zweite Seite
+GET {{host}}/api/bookings?roomId={{roomId}}&from=2026-11-01T00:00:00%2B01:00&to=2026-12-01T00:00:00%2B01:00&size=2&page=1
+
+### A6 Liste: Standort inkl. Unterebenen, nur aktive Buchungen von alice
+GET {{host}}/api/bookings?locationId={{floorId}}&userId={{alice}}&status=ACTIVE
+
+### A6 Seitengrösse über 100 → 400
+GET {{host}}/api/bookings?size=101

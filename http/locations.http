@@ -1,0 +1,76 @@
+### A1 Standorthierarchie verwalten
+# Voraussetzung: ./mvnw spring-boot:run (Umgebung "dev" = Dev-Seed, "testdata" = nach scripts/generate-data.sql)
+
+### Alle Standorte (lesen ohne Header)
+GET {{host}}/api/locations
+
+### Standort anlegen (Wurzel) → 201
+POST {{host}}/api/locations
+X-User-Id: {{admin}}
+Content-Type: application/json
+
+{ "parentId": null, "name": "Zürich", "type": "BRANCH" }
+
+> {% client.global.set("branchId", response.body.id); %}
+
+### Gebäude darunter → 201
+POST {{host}}/api/locations
+X-User-Id: {{admin}}
+Content-Type: application/json
+
+{ "parentId": {{branchId}}, "name": "Gebäude Nord", "type": "BUILDING" }
+
+> {% client.global.set("buildingId", response.body.id); %}
+
+### Etage darunter → 201
+POST {{host}}/api/locations
+X-User-Id: {{admin}}
+Content-Type: application/json
+
+{ "parentId": {{buildingId}}, "name": "EG", "type": "FLOOR" }
+
+> {% client.global.set("floorId", response.body.id); %}
+
+### Ändern (umbenennen) → 200
+PUT {{host}}/api/locations/{{buildingId}}
+X-User-Id: {{admin}}
+Content-Type: application/json
+
+{ "parentId": {{branchId}}, "name": "Gebäude Süd", "type": "BUILDING" }
+
+### Zyklus: Standort unter die eigene Etage hängen → 400 (DB-Trigger)
+PUT {{host}}/api/locations/{{branchId}}
+X-User-Id: {{admin}}
+Content-Type: application/json
+
+{ "parentId": {{floorId}}, "name": "Zürich", "type": "BRANCH" }
+
+### Ungültige Eingabe (leerer Name) → 400
+POST {{host}}/api/locations
+X-User-Id: {{admin}}
+Content-Type: application/json
+
+{ "parentId": null, "name": "", "type": "BRANCH" }
+
+### Ohne Header → 401
+POST {{host}}/api/locations
+Content-Type: application/json
+
+{ "parentId": null, "name": "Basel", "type": "BRANCH" }
+
+### Kein Admin → 403
+POST {{host}}/api/locations
+X-User-Id: {{alice}}
+Content-Type: application/json
+
+{ "parentId": null, "name": "Basel", "type": "BRANCH" }
+
+### Unbekannter Standort → 404
+GET {{host}}/api/locations/999999
+
+### Deaktivieren (Soft Delete) → 204
+DELETE {{host}}/api/locations/{{floorId}}
+X-User-Id: {{admin}}
+
+### Deaktivierter Standort bleibt lesbar (active = false)
+GET {{host}}/api/locations/{{floorId}}
