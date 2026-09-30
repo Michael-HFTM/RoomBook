@@ -2,8 +2,8 @@
 
 HFTM Database Development Projektarbeit · Michael Gasser
 
-Spring Boot und PostgreSQL. Die REST-API bucht Arbeits- und Meetingräume über mehrere Standorte hinweg,
-schliesst Doppelbuchungen aus und wertet die Belegung aus.
+Spring Boot und PostgreSQL.<br>
+Die REST-API bucht Arbeits- und Meetingräume über mehrere Standorte hinweg, schliesst Doppelbuchungen aus und wertet die Belegung aus.<br>
 Projektsteckbrief: [docs/management/Projectsketch_RoomBook.pdf](docs/management/Projectsketch_RoomBook.pdf)
 
 ## Fachliche Anforderungen
@@ -78,10 +78,11 @@ Regeln, die zusätzlich in der Datenbank durchgesetzt werden (Nachweis: `SchemaC
   werden per Advisory Lock serialisiert.
 - **Gültige Werte:** CHECK-Constraints für Enum-Werte, Kapazität, Zeitraum, Anzahl Serientermine und Titel.
 
-Nicht in der Datenbank erzwungen: Dass eine Serie mindestens einen und höchstens `occurrences` Termine hat (im ERD
-als 1..n dargestellt), stellt der Service sicher, indem er Serie und Termine in einer Transaktion anlegt (A4, T4).
+**Nicht in der Datenbank erzwungen:**<br>
+- Dass eine Serie mindestens einen und höchstens 12 Termine (`occurrences`) hat (im ERD als 1..n dargestellt), stellt der Service sicher, 
+indem er Serie und Termine in einer Transaktion anlegt (A4, T4).
 
-Schemaentscheide:
+**Schemaentscheide:**
 
 - **Normalisierung (3NF):** Jede Information liegt an einer Stelle; Standortpfade werden nicht gespeichert, sondern
   per rekursiver Abfrage ermittelt, damit das Umhängen eines Knotens nur eine Zeile ändert.
@@ -103,14 +104,20 @@ Schemaentscheide:
 ```
 
 `spring-boot:run` aktiviert das Profil `dev` und lädt Beispieldaten aus
-[`db/dev/R__dev_seed.sql`](src/main/resources/db/dev/R__dev_seed.sql); die Tests laden sie nicht.
+[`db/dev/R__dev_seed.sql`](src/main/resources/db/dev/R__dev_seed.sql).<br>
+Die Tests laden sie nicht.<br>
 Auf einer leeren DB gilt: `X-User-Id: 1` = admin (ADMIN), `2` = alice, `3` = bob (USER).
 
 Swagger UI: http://localhost:8080/swagger-ui.html
 
-API-Beispielaufrufe für A1–A7 inkl. Fehlerfällen: [`http/`](http) (IntelliJ HTTP Client, eine Datei pro Fachbereich).
-Die Umgebung wählt die Benutzer-IDs: `dev` für den Dev-Seed auf leerer DB, `testdata` nach dem Testdatengenerator
-(`1` = ADMIN, `6`/`7` = USER). Jede Datei legt ihre eigenen Standorte und Räume an und ist deshalb wiederholbar.
+API-Beispielaufrufe für A1–A7 inkl. Fehlerfällen: [`http/`](http) (IntelliJ HTTP Client, eine Datei pro Fachbereich).<br>
+<br>
+Die Umgebung wählt die Benutzer-IDs:<br>
+- `dev` für den Dev-Seed auf leerer DB
+- `testdata` nach dem Testdatengenerator (`1` = ADMIN, `6`/`7` = USER).<br>
+ 
+Jede Datei legt ihre eigenen Standorte und Räume an und ist deshalb wiederholbar.<br>
+Ohne JetBrains-IDE lassen sich dieselben Aufrufe über die Swagger UI ausführen (Header `X-User-Id` angeben).
 
 ## Tests
 
@@ -118,10 +125,11 @@ Die Umgebung wählt die Benutzer-IDs: `dev` für den Dev-Seed auf leerer DB, `te
 ./mvnw verify              # Integrationstests gegen PostgreSQL (Testcontainers)
 ```
 
-Voraussetzung: JDK 25 und ein laufendes Docker (Docker Desktop). Testcontainers startet `postgres:18`, Flyway baut das
-Schema ab leerer DB auf; `compose.yaml`, Dev-Seed und T9-Testdaten werden nicht gebraucht. Jede Testklasse legt kleine,
-kontrollierte Daten an und entfernt sie wieder: per Rollback der Test-Transaktion bzw. explizit bei Tests, die echt
-committen müssen (`BookingConcurrencyTest`, `LocationSubtreeCacheTest`).
+Voraussetzung: JDK 25 und ein laufendes Docker (z.B. Docker Desktop).<br>
+Testcontainers startet `postgres:18`, Flyway baut das Schema ab leerer DB auf; `compose.yaml`<br>
+Dev-Seed und T9-Testdaten werden nicht gebraucht. <br>
+Jede Testklasse legt kleine, kontrollierte Daten an und entfernt sie wieder:<br>
+per Rollback der Test-Transaktion bzw. explizit bei Tests, die echt committen müssen (`BookingConcurrencyTest`, `LocationSubtreeCacheTest`).
 
 | Bereich | Testklassen |
 |---------|-------------|
