@@ -59,8 +59,8 @@ und `docs/management/Projectsketch_RoomBook.pdf` (Steckbrief, A1–A7). Erledigt
 ### 8. Abgabe
 - [x] API-Beispielaufrufe als `http/*.http` (Umgebungen `dev` und `testdata` für die Benutzer-IDs)
 - [x] README: Nachweistabelle A1–A7 und T1–T12 vollständig, Entscheide, Einschränkungen
-- [ ] `docs/ki/KI-Deklaration.md` vervollständigen (laufend pro Arbeitspaket nachgeführt), Ort/Datum ergänzen, im README verlinken
-- [ ] Git-Tag für den Abgabestand, im README vermerken; Dozent (simon.erhardt@hftm.ch) einladen
+- [x] `docs/ki/KI-Deklaration.md` vervollständigen (laufend pro Arbeitspaket nachgeführt), Ort/Datum ergänzen, im README verlinken
+- [x] Git-Tag für den Abgabestand, im README vermerken; Dozent (simon.erhardt@hftm.ch) einladen
 
 ## Entscheide
 
