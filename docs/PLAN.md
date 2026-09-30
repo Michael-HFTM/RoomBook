@@ -45,9 +45,9 @@ und `docs/management/Projectsketch_RoomBook.pdf` (Steckbrief, A1–A7). Erledigt
 ### 6. Testdaten und Performance (T9, T10)
 - [x] Generator `scripts/generate-data.sql` (deterministisch mit `setseed`): ≥ 100'000 Buchungen, überschneidungsfrei
   - Ziel aus Steckbrief-Vorarbeit: ~150'000 Buchungen, ~200 Räume, 2 Jahre, 500 Benutzer, ungleich verteilt (beliebte Räume, Stosszeiten), ~10 % Stornos
-- [ ] T10: Abfrage wählen (voraussichtlich A6 nach Benutzer und Zeitraum), `EXPLAIN (ANALYZE, BUFFERS)` vorher/nachher, mehrfach messen
-- [ ] Index als eigene Migration, damit der Ausgangszustand reproduzierbar bleibt; Nutzen und Kosten dokumentieren
-- [ ] Messungen unter `docs/performance/`
+- [x] T10: Abfrage wählen (voraussichtlich A6 nach Benutzer und Zeitraum), `EXPLAIN (ANALYZE, BUFFERS)` vorher/nachher, mehrfach messen
+- [x] Index als eigene Migration, damit der Ausgangszustand reproduzierbar bleibt; Nutzen und Kosten dokumentieren
+- [x] Messungen unter `docs/performance/`
 
 ### 7. Cache (T12)
 - [ ] Kandidat: Teilbaum der Standorthierarchie (ändert selten; `LocationService#findSubtreeIds`, genutzt von A6;
@@ -108,3 +108,8 @@ Hier Entscheide mit Datum und kurzer Begründung festhalten.
   30/45/60 min ab Slotbeginn, damit Überschneidungen ausgeschlossen sind. Schiefe nur bei Raumbeliebtheit und
   Buchungen pro Benutzer (nötig für A7-Ranking und T10); Stosszeiten und Serien bewusst weggelassen. Läuft per
   `psql` gegen die migrierte DB, nicht über Flyway, weil Testdaten nicht zum Schema gehören.
+- 2026-09-30: Phase 6 (T10): Gemessen wird das SQL aus dem Hibernate-Log als `PREPARE`, in den Modi custom, generic
+  und auto, weil der JDBC-Treiber ab der 5. Ausführung serverseitige Prepared Statements nutzt. Ohne Index wechselte
+  PostgreSQL beim Vielbucher auf den generischen Plan (`? IS NULL OR …` nicht auflösbar). V4 `(app_user_id,
+  start_time)`: Liste 12.3 → 1.3 ms, auto bleibt danach bei custom. Deshalb kein `plan_cache_mode` und keine
+  dynamische Abfrage. Kosten: 5 MB, Masseneinfügen ca. 6 % langsamer.
