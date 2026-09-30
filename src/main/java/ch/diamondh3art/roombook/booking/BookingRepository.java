@@ -14,8 +14,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
      * A6 (T6, T7): DTO projection with one query per page, filtered and paged in the DB. ORDER BY start_time, id is
      * part of the query so the order stays stable for equal start times, independent of the Pageable.
      * The casts type the time parameters, otherwise PostgreSQL rejects "? IS NULL" for a null value.
-     * ponytail: optional filters as ":param IS NULL OR ..." keep one static query; switch to a dynamic query if
-     * the T10 measurement shows a bad generic plan.
+     * ponytail: optional filters as ":param IS NULL OR ..." keep one static query. The generic plan cannot resolve
+     * them; with idx_booking_app_user_id_start_time (V4) PostgreSQL keeps custom plans (docs/performance). Switch to a
+     * dynamic query if a new filter combination falls back to a slow generic plan.
      */
     @SuppressWarnings("JpaQlInspection") // IntelliJ only knows JPA cast targets, Hibernate also accepts OffsetDateTime
     @Query("""
