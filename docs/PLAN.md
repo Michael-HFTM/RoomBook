@@ -11,8 +11,8 @@ und `docs/management/Projectsketch_RoomBook.pdf` (Steckbrief, A1–A7). Erledigt
   - Exclusion-Constraint: `EXCLUDE USING gist (room_id WITH =, tstzrange(start_time, end_time) WITH &&) WHERE (status <> 'CANCELLED')`
   - Zyklenschutz der Hierarchie als DB-Trigger (Regel nicht nur in der API)
 - [x] `SchemaConstraintsTest`: DB-Regeln aus V1 direkt per SQL geprüft (Exclusion, CHECKs, UNIQUE, Zyklen-Trigger)
-- [ ] `V2__…sql`: fachlich sinnvolle Folgeänderung (z. B. `booking.title` mit Backfill)
-- [ ] Test: Neuaufbau ab leerer DB und Übergang V1 → V2 (Flyway `target`)
+- [x] `V2__booking_add_title.sql`: `booking.title` mit Backfill aus Raumname, danach `NOT NULL` und CHECK gegen leere Titel
+- [x] Test: Neuaufbau ab leerer DB (Spring-Kontext) und Übergang V1 → V2 mit Bestandsdaten (`SchemaMigrationTest`, Flyway `target`)
 - [ ] ER-Diagramm (Mermaid im README) und Begründung der Schemaentscheide
 
 ### 2. Entities und CRUD (T3, A1, A2)
