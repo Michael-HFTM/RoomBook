@@ -11,6 +11,7 @@ public class Booking {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "booking_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -18,12 +19,12 @@ public class Booking {
     private Room room;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "app_user_id", nullable = false)
     private AppUser user;
 
     // null for single bookings
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "series_id")
+    @JoinColumn(name = "booking_series_id")
     private BookingSeries series;
 
     @Column(name = "start_time", nullable = false)

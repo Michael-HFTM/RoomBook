@@ -8,6 +8,7 @@ public class AppUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "app_user_id")
     private Long id;
 
     @Column(name = "username", nullable = false, length = 50)
