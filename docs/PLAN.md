@@ -10,6 +10,7 @@ und `docs/management/Projectsketch_RoomBook.pdf` (Steckbrief, A1–A7). Erledigt
   - CHECK `start_time < end_time`, CHECK `capacity > 0`, UNIQUE `(location_id, name)`, CHECK auf Enum-Werte (`status`, `type`, `role`)
   - Exclusion-Constraint: `EXCLUDE USING gist (room_id WITH =, tstzrange(start_time, end_time) WITH &&) WHERE (status <> 'CANCELLED')`
   - Zyklenschutz der Hierarchie als DB-Trigger (Regel nicht nur in der API)
+- [x] `SchemaConstraintsTest`: DB-Regeln aus V1 direkt per SQL geprüft (Exclusion, CHECKs, UNIQUE, Zyklen-Trigger)
 - [ ] `V2__…sql`: fachlich sinnvolle Folgeänderung (z. B. `booking.title` mit Backfill)
 - [ ] Test: Neuaufbau ab leerer DB und Übergang V1 → V2 (Flyway `target`)
 - [ ] ER-Diagramm (Mermaid im README) und Begründung der Schemaentscheide
@@ -22,6 +23,7 @@ und `docs/management/Projectsketch_RoomBook.pdf` (Steckbrief, A1–A7). Erledigt
 
 ### 3. Buchungen (A4, A5, T4, T5)
 - [ ] A4 Einzel- und Serienbuchung (wöchentlich, max. 12) in einer `@Transactional`-Methode, Termine einzeln flushen
+- [ ] Start- und Endzeit im Service auf volle Minuten runden (siehe Entscheid 2026-09-30)
 - [ ] T4-Test: Serie, deren n-ter Termin mit bestehender Buchung kollidiert → Serie und frühere Termine sind nicht in der DB
 - [ ] A5 Ändern/Stornieren nur Buchender oder Admin (sonst 403), Storno = Status `CANCELLED`; `@Version` → 409
 - [ ] T5-Tests mit zwei Threads (`CountDownLatch`): gleichzeitige überlappende Buchung (Exclusion → genau eine gewinnt) und gleichzeitige Änderung (Optimistic Lock)
@@ -70,3 +72,5 @@ Hier Entscheide mit Datum und kurzer Begründung festhalten.
 - 2026-09-30: Benennung nach Unterrichtskonvention: Tabellen Singular/snake_case, PK-Spalte `<tabelle>_id`, FK-Spalte
   `<reftabelle>_id` (Selbstreferenz `parent_location_id`); Constraints `pk_<tabelle>`, `fk_<tabelle>_<reftabelle>`,
   `uq_/ck_<tabelle>_<spalte>`, `ex_` für Exclusion, Indizes `idx_<tabelle>_<spalte>`.
+- 2026-09-30: Zeitgenauigkeit von Buchungen: `timestamptz` speichert auf die Mikrosekunde. Start und Ende werden später
+  im Service auf volle Minuten gerundet; vorerst ohne DB-Constraint, da der Steckbrief kein Raster vorgibt.
