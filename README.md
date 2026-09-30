@@ -114,7 +114,9 @@ Swagger UI: http://localhost:8080/swagger-ui.html
 
 | Anforderung | Umsetzung | Nachweis |
 |-------------|-----------|----------|
-| A1–A7       | TODO      | TODO     |
+| A1          | `LocationController`/`LocationService`, Zyklen-Trigger `location_no_cycle` | `location/LocationApiTest`, `SchemaConstraintsTest` |
+| A2          | `RoomController`/`RoomService`, `uq_room_location_id_name`, `ck_room_capacity` | `room/RoomApiTest`, `SchemaConstraintsTest` |
+| A3–A7       | TODO      | TODO     |
 | T1–T12      | TODO      | TODO     |
 
 ## KI und Hilfsmittel

@@ -16,10 +16,12 @@ und `docs/management/Projectsketch_RoomBook.pdf` (Steckbrief, A1–A7). Erledigt
 - [x] ER-Diagramm (Mermaid im README) und Begründung der Schemaentscheide
 
 ### 2. Entities und CRUD (T3, A1, A2)
-- [ ] Paketstruktur pro Fachbereich: `location`, `room`, `booking`, `report`, `common`; je Controller → Service → Repository, DTOs als Records
-- [ ] Gemockte Auth: Header `X-User-Id`, Rolle aus `app_user`; fehlend/unbekannt → 401
-- [ ] A1 Standorte erfassen/ändern/deaktivieren, A2 Räume erfassen/ändern/deaktivieren
-- [ ] Zentrales Fehler-Mapping (`@RestControllerAdvice`, `ProblemDetail`): 400, 403, 404, 409 (SQLState `23P01`, Optimistic Lock)
+- [x] Paketstruktur pro Fachbereich: `location`, `room`, `booking`, `common`; je Controller → Service → Repository, DTOs als Records
+  (`report` folgt in Phase 5, `booking` vorerst nur Gerüst)
+- [x] Gemockte Auth: Header `X-User-Id`, Rolle aus `app_user`; fehlend/unbekannt → 401
+- [x] A1 Standorte erfassen/ändern/deaktivieren, A2 Räume erfassen/ändern/deaktivieren (`LocationApiTest`, `RoomApiTest`)
+- [x] Zentrales Fehler-Mapping (`@RestControllerAdvice`, `ProblemDetail`): 400, 403, 404, 409 (SQLState `23P01`, Optimistic Lock)
+  - 409 für `23P01` und Optimistic Lock ist umgesetzt, der Test folgt mit den Buchungen in Phase 3
 
 ### 3. Buchungen (A4, A5, T4, T5)
 - [ ] A4 Einzel- und Serienbuchung (wöchentlich, max. 12) in einer `@Transactional`-Methode, Termine einzeln flushen
@@ -74,3 +76,9 @@ Hier Entscheide mit Datum und kurzer Begründung festhalten.
   `uq_/ck_<tabelle>_<spalte>`, `ex_` für Exclusion, Indizes `idx_<tabelle>_<spalte>`.
 - 2026-09-30: Zeitgenauigkeit von Buchungen: `timestamptz` speichert auf die Mikrosekunde. Start und Ende werden später
   im Service auf volle Minuten gerundet; vorerst ohne DB-Constraint, da der Steckbrief kein Raster vorgibt.
+- 2026-09-30: Phase 2: Lesende Endpunkte (`GET`) ohne `X-User-Id`, schreibende verlangen den Header (fehlend/unbekannt
+  → 401, keine Admin-Rolle → 403). Deaktivieren über `DELETE` (Soft Delete, setzt `active = false`). Deaktivieren wirkt
+  nur auf den Knoten selbst; ob Räume unter deaktivierten Standorten buchbar sind, wird mit A3/A4 entschieden.
+  Services flushen nach Schreiboperationen, damit DB-Verletzungen (Trigger, UNIQUE) in der Transaktion als
+  HTTP-Fehler ankommen. Constraint-Name aus `PSQLException` (PostgreSQL-Treiber daher im Compile-Scope), weil
+  Hibernate den Namen bei Trigger-Fehlern nicht erkennt. CHECK/NOT NULL → 400, UNIQUE/Exclusion/FK → 409.
