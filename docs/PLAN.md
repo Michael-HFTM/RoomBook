@@ -43,7 +43,7 @@ und `docs/management/Projectsketch_RoomBook.pdf` (Steckbrief, A1–A7). Erledigt
 - [x] Test mit bekannten Ergebnissen, inkl. mehrerer Buchungen pro Raum und Buchungen über die Geschäftszeit hinaus
 
 ### 6. Testdaten und Performance (T9, T10)
-- [ ] Generator `scripts/generate-data.sql` (deterministisch mit `setseed`): ≥ 100'000 Buchungen, überschneidungsfrei
+- [x] Generator `scripts/generate-data.sql` (deterministisch mit `setseed`): ≥ 100'000 Buchungen, überschneidungsfrei
   - Ziel aus Steckbrief-Vorarbeit: ~150'000 Buchungen, ~200 Räume, 2 Jahre, 500 Benutzer, ungleich verteilt (beliebte Räume, Stosszeiten), ~10 % Stornos
 - [ ] T10: Abfrage wählen (voraussichtlich A6 nach Benutzer und Zeitraum), `EXPLAIN (ANALYZE, BUFFERS)` vorher/nachher, mehrfach messen
 - [ ] Index als eigene Migration, damit der Ausgangszustand reproduzierbar bleibt; Nutzen und Kosten dokumentieren
@@ -104,3 +104,7 @@ Hier Entscheide mit Datum und kurzer Begründung festhalten.
   das Schema keinen Deaktivierungszeitpunkt kennt. Feiertage werden ignoriert. Ranking über die Sortierung nach
   Belegungsrate; Auswertungen nach Wochentag/Tageszeit und Stornoquote aus dem Steckbrief bewusst nicht umgesetzt.
   Gesamtrate eines Standorts = Summe gebuchte / Summe verfügbare Stunden seiner Räume.
+- 2026-09-30: Phase 6 (T9): Generator über ein Stundenraster pro Raum und Werktag (07–18 Uhr Zürich), Buchung
+  30/45/60 min ab Slotbeginn, damit Überschneidungen ausgeschlossen sind. Schiefe nur bei Raumbeliebtheit und
+  Buchungen pro Benutzer (nötig für A7-Ranking und T10); Stosszeiten und Serien bewusst weggelassen. Läuft per
+  `psql` gegen die migrierte DB, nicht über Flyway, weil Testdaten nicht zum Schema gehören.
