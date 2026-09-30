@@ -1,3 +1,49 @@
+# Default: normalize text files to LF in the repository and working tree
 * text=auto eol=lf
-*.cmd text eol=crlf
-*.pdf binary
+
+# Source and config
+*.java          text eol=lf
+*.kt            text eol=lf
+*.xml           text eol=lf
+*.yml           text eol=lf
+*.yaml          text eol=lf
+*.properties    text eol=lf
+*.json          text eol=lf
+*.sql           text eol=lf
+*.md            text eol=lf
+*.txt           text eol=lf
+*.http          text eol=lf
+*.html          text eol=lf
+*.css           text eol=lf
+*.js            text eol=lf
+*.gradle        text eol=lf
+*.gitignore     text eol=lf
+*.gitattributes text eol=lf
+.editorconfig   text eol=lf
+Dockerfile      text eol=lf
+docker-compose*.yml text eol=lf
+
+# Shell scripts must be LF (otherwise "bad interpreter" on Linux/containers)
+*.sh            text eol=lf
+mvnw            text eol=lf
+gradlew         text eol=lf
+
+# Windows scripts require CRLF
+*.bat           text eol=crlf
+*.cmd           text eol=crlf
+*.ps1           text eol=crlf
+
+# Binary files: never touch
+*.png           binary
+*.jpg           binary
+*.jpeg          binary
+*.gif           binary
+*.ico           binary
+*.pdf           binary
+*.jar           binary
+*.war           binary
+*.zip           binary
+*.gz            binary
+*.ttf           binary
+*.woff          binary
+*.woff2         binary
