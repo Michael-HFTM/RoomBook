@@ -102,6 +102,10 @@ Schemaentscheide:
 ./mvnw spring-boot:run     # startet PostgreSQL automatisch über compose.yaml
 ```
 
+`spring-boot:run` aktiviert das Profil `dev` und lädt Beispieldaten aus
+[`db/dev/R__dev_seed.sql`](src/main/resources/db/dev/R__dev_seed.sql); die Tests laden sie nicht.
+Auf einer leeren DB gilt: `X-User-Id: 1` = admin (ADMIN), `2` = alice, `3` = bob (USER).
+
 Swagger UI: http://localhost:8080/swagger-ui.html
 
 ## Tests
