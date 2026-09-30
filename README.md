@@ -116,8 +116,13 @@ Swagger UI: http://localhost:8080/swagger-ui.html
 |-------------|-----------|----------|
 | A1          | `LocationController`/`LocationService`, Zyklen-Trigger `location_no_cycle` | `location/LocationApiTest`, `SchemaConstraintsTest` |
 | A2          | `RoomController`/`RoomService`, `uq_room_location_id_name`, `ck_room_capacity` | `room/RoomApiTest`, `SchemaConstraintsTest` |
-| A3–A7       | TODO      | TODO     |
-| T1–T12      | TODO      | TODO     |
+| A3          | TODO      | TODO     |
+| A4          | `BookingController`/`BookingService#create`, `ex_booking_room_id` | `booking/BookingApiTest` |
+| A5          | `BookingService#update`/`#cancel`, `@Version` | `booking/BookingApiTest` |
+| A6–A7       | TODO      | TODO     |
+| T4          | Serie und Termine in einer `@Transactional`-Methode, Flush pro Termin | `BookingConcurrencyTest#seriesIsRolledBackCompletelyWhenOneOccurrenceOverlaps` |
+| T5          | Exclusion-Constraint (gleichzeitige Buchung), Optimistic Locking (gleichzeitige Änderung) → 409 | `BookingConcurrencyTest` (zwei Threads) |
+| übrige T    | TODO      | TODO     |
 
 ## KI und Hilfsmittel
 

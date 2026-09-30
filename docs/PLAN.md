@@ -21,14 +21,14 @@ und `docs/management/Projectsketch_RoomBook.pdf` (Steckbrief, A1–A7). Erledigt
 - [x] Gemockte Auth: Header `X-User-Id`, Rolle aus `app_user`; fehlend/unbekannt → 401
 - [x] A1 Standorte erfassen/ändern/deaktivieren, A2 Räume erfassen/ändern/deaktivieren (`LocationApiTest`, `RoomApiTest`)
 - [x] Zentrales Fehler-Mapping (`@RestControllerAdvice`, `ProblemDetail`): 400, 403, 404, 409 (SQLState `23P01`, Optimistic Lock)
-  - 409 für `23P01` und Optimistic Lock ist umgesetzt, der Test folgt mit den Buchungen in Phase 3
+  - 409 für `23P01` und Optimistic Lock: `BookingApiTest`, `BookingConcurrencyTest`
 
 ### 3. Buchungen (A4, A5, T4, T5)
-- [ ] A4 Einzel- und Serienbuchung (wöchentlich, max. 12) in einer `@Transactional`-Methode, Termine einzeln flushen
-- [ ] Start- und Endzeit im Service auf volle Minuten runden (siehe Entscheid 2026-09-30)
-- [ ] T4-Test: Serie, deren n-ter Termin mit bestehender Buchung kollidiert → Serie und frühere Termine sind nicht in der DB
-- [ ] A5 Ändern/Stornieren nur Buchender oder Admin (sonst 403), Storno = Status `CANCELLED`; `@Version` → 409
-- [ ] T5-Tests mit zwei Threads (`CountDownLatch`): gleichzeitige überlappende Buchung (Exclusion → genau eine gewinnt) und gleichzeitige Änderung (Optimistic Lock)
+- [x] A4 Einzel- und Serienbuchung (wöchentlich, max. 12) in einer `@Transactional`-Methode, Termine einzeln flushen
+- [x] Start- und Endzeit im Service auf volle Minuten runden (siehe Entscheid 2026-09-30)
+- [x] T4-Test: Serie, deren n-ter Termin mit bestehender Buchung kollidiert → Serie und frühere Termine sind nicht in der DB
+- [x] A5 Ändern/Stornieren nur Buchender oder Admin (sonst 403), Storno = Status `CANCELLED`; `@Version` → 409
+- [x] T5-Tests mit zwei Threads (`CountDownLatch`): gleichzeitige überlappende Buchung (Exclusion → genau eine gewinnt) und gleichzeitige Änderung (Optimistic Lock)
 
 ### 4. Lesezugriffe (A3, A6, T6, T7, T11)
 - [ ] Rekursive CTE für den Teilbaum einer Gruppierung (A3, A6, A7)
@@ -82,3 +82,9 @@ Hier Entscheide mit Datum und kurzer Begründung festhalten.
   Services flushen nach Schreiboperationen, damit DB-Verletzungen (Trigger, UNIQUE) in der Transaktion als
   HTTP-Fehler ankommen. Constraint-Name aus `PSQLException` (PostgreSQL-Treiber daher im Compile-Scope), weil
   Hibernate den Namen bei Trigger-Fehlern nicht erkennt. CHECK/NOT NULL → 400, UNIQUE/Exclusion/FK → 409.
+- 2026-09-30: Phase 3: Sekunden werden abgeschnitten (`truncatedTo(MINUTES)`), nicht kaufmännisch gerundet.
+  Serientermine werden in `Europe/Zurich` berechnet, damit sie über die Zeitumstellung dieselbe Ortszeit behalten.
+  Überschneidungen prüft nur das Exclusion-Constraint (keine Vorabprüfung im Service), weil nur es auch parallele
+  Anfragen abdeckt. Änderungen verlangen die gelesene `version` im Request, damit verlorene Updates auch über
+  getrennte HTTP-Anfragen erkannt werden; `@Version` sichert den gleichzeitigen Fall ab. Buchbar ist ein Raum, wenn
+  er selbst aktiv ist; deaktivierte übergeordnete Standorte werden mit der rekursiven CTE (Phase 4) berücksichtigt.
