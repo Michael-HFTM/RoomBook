@@ -37,6 +37,9 @@ public class Booking {
     @Column(nullable = false, length = 20)
     private BookingStatus status = BookingStatus.ACTIVE;
 
+    @Column(nullable = false, length = 200)
+    private String title;
+
     // optimistic locking (A5, T5)
     @Version
     @Column(nullable = false)
@@ -46,24 +49,26 @@ public class Booking {
     }
 
     public Booking(Room room, AppUser user, BookingSeries series,
-                   OffsetDateTime startTime, OffsetDateTime endTime) {
+                   OffsetDateTime startTime, OffsetDateTime endTime, String title) {
         this.room = room;
         this.user = user;
         this.series = series;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.title = title;
     }
 
     public void cancel() {
         this.status = BookingStatus.CANCELLED;
     }
 
-    public void reschedule(OffsetDateTime startTime, OffsetDateTime endTime) {
+    public void update(OffsetDateTime startTime, OffsetDateTime endTime, String title) {
         if (status == BookingStatus.CANCELLED) {
             throw new IllegalStateException("Cancelled booking " + id + " cannot be rescheduled");
         }
         this.startTime = startTime;
         this.endTime = endTime;
+        this.title = title;
     }
 
     public boolean isOwnedBy(Long userId) {
@@ -77,5 +82,6 @@ public class Booking {
     public OffsetDateTime getStartTime() { return startTime; }
     public OffsetDateTime getEndTime() { return endTime; }
     public BookingStatus getStatus() { return status; }
+    public String getTitle() { return title; }
     public int getVersion() { return version; }
 }

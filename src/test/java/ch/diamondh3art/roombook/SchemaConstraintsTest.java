@@ -83,6 +83,11 @@ class SchemaConstraintsTest {
     }
 
     @Test
+    void bookingTitleMustNotBeBlank() {
+        assertViolates("23514", "ck_booking_title", () -> insertBooking(roomId, 10, 12, "ACTIVE", "   "));
+    }
+
+    @Test
     void roomCapacityMustBePositive() {
         assertViolates("23514", "ck_room_capacity", () -> insertRoom(locationId, "Room 0", 0));
     }
@@ -142,10 +147,14 @@ class SchemaConstraintsTest {
     }
 
     private void insertBooking(long roomId, int fromHour, int toHour, String status) {
+        insertBooking(roomId, fromHour, toHour, status, "Test");
+    }
+
+    private void insertBooking(long roomId, int fromHour, int toHour, String status, String title) {
         jdbc.sql("""
-                        INSERT INTO booking (room_id, app_user_id, start_time, end_time, status)
-                        VALUES (?, ?, ?, ?, ?)""")
-                .params(roomId, userId, DAY.plusHours(fromHour), DAY.plusHours(toHour), status)
+                        INSERT INTO booking (room_id, app_user_id, start_time, end_time, status, title)
+                        VALUES (?, ?, ?, ?, ?, ?)""")
+                .params(roomId, userId, DAY.plusHours(fromHour), DAY.plusHours(toHour), status, title)
                 .update();
     }
 
